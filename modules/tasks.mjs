@@ -1,12 +1,14 @@
 import fs from 'fs'
 import path from 'path'
 import zlib from 'zlib'
+import util from 'util'
 
 class workFS {
     constructor(srcPath, dstPath, storageTime = 10) {
         this._src = srcPath;
         this._dst = dstPath;
         this._storageTime = storageTime;
+        this.copyFilePromise = util.promisify(fs.copyFile);
     }
 
     get src() { return this._src }
@@ -29,11 +31,10 @@ class workFS {
             });
         return stat ? stat.ctime : 0;
     }
-    copyFile(srcFileName, dstFileName) {
-        fs.copyFileSync(srcFileName, dstFileName, err => {
-            if (err) throw err;
-        });
-        console.log(`${srcFileName} copied.`);
+    copyFile(srcDir, dstDir, listFiles) {
+        return Promise.all(listFiles.map(file => {
+            return this.copyFilePromise(this.getFullName(srcDir, file), this.getFullName(dstDir, file));
+        }));
     }
     deleteFile(fileName) {
         if (this.fileExists(fileName))
@@ -78,13 +79,13 @@ class workFS {
                 (!this.fileExists(this.getFullName(this.dst, el)));
         });
 
-        filterFileList.map(el => {
-            const srcFullName = this.getFullName(this.src, el);
-            const dstFullName = this.getFullName(this.dst, el);
-            const dstArchive = this.changeExt(dstFullName, '.bak', '.gz');
-            // if (!this.fileExists(dstArchive))
-            // this.copyFile(srcFullName, dstFullName);
-        });
+        if (filterFileList.length > 0) {
+            this.copyFile(this.src, this.dst, filterFileList)
+                .then(() => console.log('Files copied.'))
+                .catch(err => console.log(err));
+        } else
+            console.log('No files to copy.');
+
         console.groupEnd('Task: backup');
     }
     garbageCollector() {
@@ -144,6 +145,7 @@ function runTasks(srcDir, dstDir, storageTime = 30, executeTasks = {}) {
 
     if (!work.fileExists(srcDir) && !work.fileExists(dstDir)) return;
 
+    // TODO redo in sync
     if (executeTasks['backup']) work.backUpCopy();
     if (executeTasks['garbage']) work.garbageCollector();
     if (executeTasks['zipped']) work.zippedFiles();

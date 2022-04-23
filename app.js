@@ -1,3 +1,3 @@
 import { runTasks } from './modules/tasks.mjs';
 
-runTasks('D:\\Copy\\src\\', 'D:\\Copy\\dst\\', 8, { backup: true, garbage: true, zipped: true });
+runTasks('D:\\project\\src\\', 'D:\\project\\dst\\', 100, { backup: true, garbage: true, zipped: false });
