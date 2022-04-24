@@ -31,9 +31,15 @@ class workFS {
             });
         return stat ? stat.ctime : 0;
     }
-    copyFile(srcDir, dstDir, listFiles) {
+    copyFiles(srcDir, dstDir, listFiles) {
         return Promise.all(listFiles.map(file => {
-            return this.copyFilePromise(this.getFullName(srcDir, file), this.getFullName(dstDir, file));
+            return this.copyFilePromise(this.getFullName(srcDir, file), this.getFullName(dstDir, file), err => {
+                if (err) {
+                    console.log('Error found: ', err)
+                } else {
+                    console.log(`File ${file} copied.`);
+                }
+            });
         }));
     }
     deleteFile(fileName) {
@@ -80,7 +86,7 @@ class workFS {
         });
 
         if (filterFileList.length > 0) {
-            this.copyFile(this.src, this.dst, filterFileList)
+            this.copyFiles(this.src, this.dst, filterFileList)
                 .then(() => console.log('Files copied.'))
                 .catch(err => console.log(err));
         } else
