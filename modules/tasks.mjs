@@ -46,27 +46,25 @@ class workFS {
                 console.info(`${fileName} was deleted`);
             });
     }
-    zipFile(file, archiv) {
-        const thisCB = this;
-        let readableStream = fs.createReadStream(file, 'utf8');
-        readableStream.on("error", err => {
-            throw err
-        });
-        let writeableStream = fs.createWriteStream(archiv);
-        writeableStream.on("error", err => {
-            throw err
-        });
+    zipFile(srcFile, archiv) {
+        return new Promise((resolve, reject) => {
+            let readableStream = fs.createReadStream(srcFile, 'utf8');
+            readableStream.on("error", err => reject(err));
+            let writeableStream = fs.createWriteStream(archiv);
+            writeableStream.on("error", err => reject(err));
 
-        readableStream.on("close", function(ex) {
-            thisCB.deleteFile(file);
-        });
+            readableStream.on("close", () => {
+                this.deleteFile(srcFile);
+                resolve(srcFile);
+            });
 
-        let gzip = zlib.createGzip();
-        readableStream.pipe(gzip).pipe(writeableStream);
+            let gzip = zlib.createGzip();
+            readableStream.pipe(gzip).pipe(writeableStream);
+        })
     }
     async backUpCopy() {
-        // console.group('Task: backup');
-        console.log('Backup');
+        console.group('Task: backup');
+        console.log('Backup.');
 
         const srcFileList = this.getFilesList(this.src);
 
@@ -88,17 +86,18 @@ class workFS {
                 const srcFullName = this.getFullName(this.src, file);
                 const dstFullName = this.getFullName(this.dst, file);
                 await this.copyFiles(srcFullName, dstFullName)
-                    .then(res => console.log(`Files ${res} copied.`));
+                    .then(res => console.log(`File ${res} copied.`))
+                    .catch(err => console.log(err));
             };
         } else
             console.log('No files to copy.');
 
         console.log('Backup finish.')
-            // console.groupEnd('Task: backup');
+        console.groupEnd();
     }
     garbageCollector() {
-        // console.group('Task: garbage');
-        console.log('Garbage');
+        console.group('Task: garbage');
+        console.log('Garbage.');
         const dstFileList = this.getFilesList(this.dst);
 
         const filterFileList = dstFileList.filter(el => {
@@ -119,10 +118,12 @@ class workFS {
             // if (this.fileExists(fullName))
             // this.deleteFile(fullName);
         });
-        // console.groupEnd('Task: garbage');
+        console.log('Garbage.');
+        console.groupEnd();
     }
-    zippedFiles() {
+    async zippedFiles() {
         console.group('Task: zipped');
+        console.log('Zipped.');
         const dstFileList = this.getFilesList(this.dst);
 
         const filterFileList = dstFileList.filter(file => {
@@ -135,13 +136,22 @@ class workFS {
             return (new Date(age).getDate() <= this.storageTime) &&
                 (this.getExtFile(fullName) === '.bak');
         });
-        filterFileList.forEach(file => {
-            const nameArchiv = this.changeExt(file, '.bak', '.gz');
-            const srcFullName = this.getFullName(this.dst, file);
-            const dstFullName = this.getFullName(this.dst, nameArchiv);
-            // this.zipFile(srcFullName, dstFullName);
-        });
-        console.groupEnd('Task: zipped');
+
+        if (filterFileList.length > 0) {
+            for (let file of filterFileList) {
+                const nameArchiv = this.changeExt(file, '.bak', '.gz');
+                const srcFullName = this.getFullName(this.dst, file);
+                const dstFullName = this.getFullName(this.dst, nameArchiv);
+                await this.zipFile(srcFullName, dstFullName)
+                    .then(res => console.log(`Zipped file ${res}.`))
+                    .catch(err => console.log(err));
+            };
+        } else {
+            console.log('No files to zipped.');
+        };
+
+        console.log('Zipped finish.');
+        console.groupEnd();
     }
 }
 
@@ -151,16 +161,21 @@ async function runTasks(srcDir, dstDir, storageTime = 30, executeTasks = {}) {
         dstDir,
         storageTime
     );
+    console.group('Tasks:');
+    console.log('Execute tasks.');
 
     if (!work.fileExists(srcDir) && !work.fileExists(dstDir)) return;
 
-    // TODO redo in sync
+    // TODO Revise the method of starting tasks
     if (executeTasks['backup'])
         await work.backUpCopy();
+    if (executeTasks['zipped'])
+        await work.zippedFiles();
     if (executeTasks['garbage'])
         work.garbageCollector();
-    if (executeTasks['zipped'])
-        work.zippedFiles();
+
+    console.log('Execute tasks finish.');
+    console.groupEnd();
 }
 
 export { runTasks };
