@@ -2,8 +2,10 @@ import fs from 'fs'
 
 class Log {
     constructor(file) {
-        // TODO add error checking
         this._stream = fs.createWriteStream(file, { flags: 'a' });
+        this._stream.on('error', err => {
+            console.log(`${err.name} log file '${file}'. ${err.message}`);
+        })
     }
 
     getDate() {
@@ -15,8 +17,10 @@ class Log {
         this._stream.write(`${this.getDate()} - [${type}]: ${text}\n`);
     }
 
-    // TODO add error checking
     closeStream() { this._stream.end() }
 }
 
-export { Log };
+let ll = new Log('');
+ll.logs('qqqq', 'aaa');
+ll.closeStream();
+// export { Log };
