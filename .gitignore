@@ -1,1 +1,4 @@
 /node_modules
+/dst
+/src
+run-tasks.log.txt
