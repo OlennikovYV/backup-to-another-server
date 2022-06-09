@@ -1,15 +1,16 @@
 import fs from "fs";
 import path from "path";
 import zlib from "zlib";
+import logWrite from "./utils/log.mjs";
 
-import { Log } from "./log.mjs";
+const TYPE_MESSAGE_SYST = "SYST";
+const TYPE_MESSAGE_INFO = "INFO";
 
 class workFS {
-  constructor(srcPath, dstPath, storageTime = 10, logFileStr) {
+  constructor(srcPath, dstPath, storageTime = 10) {
     this._src = srcPath;
     this._dst = dstPath;
     this._storageTime = storageTime;
-    this._logStream = new Log(logFileStr);
   }
 
   get src() {
@@ -22,9 +23,6 @@ class workFS {
     return this._storageTime;
   }
 
-  logWrite(text) {
-    this._logStream.logs(text);
-  }
   getFullName(dir, fileName) {
     return path.join(dir, fileName);
   }
@@ -63,7 +61,7 @@ class workFS {
     if (this.fileExists(fileName))
       fs.unlink(fileName, (err) => {
         if (err) throw err;
-        this.logWrite(`${fileName} was deleted.`);
+        logWrite(`${fileName} was deleted.`);
       });
   }
   zipFile(srcFile, archiv) {
@@ -83,7 +81,7 @@ class workFS {
     });
   }
   async backUpCopy() {
-    this.logWrite("Backup.");
+    logWrite("Backup.");
 
     const srcFileList = this.getFilesList(this.src);
 
@@ -108,15 +106,15 @@ class workFS {
         const srcFullName = this.getFullName(this.src, file);
         const dstFullName = this.getFullName(this.dst, file);
         await this.copyFiles(srcFullName, dstFullName)
-          .then((res) => this.logWrite(`File ${res} copied.`))
-          .catch((err) => this.logWrite(err));
+          .then((res) => logWrite(`File ${res} copied.`, TYPE_MESSAGE_INFO))
+          .catch((err) => logWrite(err));
       }
-    } else this.logWrite("No files to copy.");
+    } else logWrite("No files to copy.", TYPE_MESSAGE_INFO);
 
-    this.logWrite("Backup finish.");
+    logWrite("Backup finish.");
   }
   garbageCollector() {
-    this.logWrite("Garbage.");
+    logWrite("Garbage.");
     const dstFileList = this.getFilesList(this.dst);
 
     const filterFileList = dstFileList.filter((el) => {
@@ -136,10 +134,10 @@ class workFS {
       const fullName = this.getFullName(this.dst, file);
       if (this.fileExists(fullName)) this.deleteFile(fullName);
     });
-    this.logWrite("Garbage.");
+    logWrite("Garbage.");
   }
   async zippedFiles() {
-    this.logWrite("Zipped.");
+    logWrite("Zipped.");
     const dstFileList = this.getFilesList(this.dst);
 
     const filterFileList = dstFileList.filter((file) => {
@@ -161,30 +159,21 @@ class workFS {
         const srcFullName = this.getFullName(this.dst, file);
         const dstFullName = this.getFullName(this.dst, nameArchiv);
         await this.zipFile(srcFullName, dstFullName)
-          .then((res) => this.logWrite(`Zipped file ${res}.`))
-          .catch((err) => this.logWrite(err));
+          .then((res) => logWrite(`Zipped file ${res}.`))
+          .catch((err) => logWrite(err));
       }
     } else {
-      this.logWrite("No files to zipped.");
+      logWrite("No files to zipped.");
     }
 
-    this.logWrite("Zipped finish.");
-  }
-  close() {
-    this._logStream.closeStream();
+    logWrite("Zipped finish.");
   }
 }
 
-async function runTasks(
-  srcDir,
-  dstDir,
-  storageTime = 30,
-  logFileStr,
-  executeTasks = {}
-) {
-  const work = new workFS(srcDir, dstDir, storageTime, logFileStr);
+async function runTasks(srcDir, dstDir, storageTime = 30, executeTasks = {}) {
+  const work = new workFS(srcDir, dstDir, storageTime);
 
-  work.logWrite("Execute tasks.");
+  logWrite("Job start.");
 
   if (!work.fileExists(srcDir) && !work.fileExists(dstDir)) return;
 
@@ -193,8 +182,8 @@ async function runTasks(
   if (executeTasks["zipped"]) await work.zippedFiles();
   if (executeTasks["garbage"]) work.garbageCollector();
 
-  work.logWrite("Execute tasks finish.");
-  work.close();
+  logWrite("End of job.");
+  logWrite("");
 }
 
 export { runTasks };
