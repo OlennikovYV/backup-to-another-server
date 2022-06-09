@@ -1,16 +1,49 @@
 import fs from "fs";
 
-function civilianDateTime() {
-  const nowDate = new Date().toISOString();
-  const dateTime = nowDate.split("T");
-  const date = dateTime[0];
-  const time = dateTime[1].split(".")[0];
+function prependZero(time) {
+  return time < 10 ? "0" + time : time;
+}
 
-  return `${date} ${time}`;
+function getDateTime(splitDate = "-", splitTime = ":") {
+  let date, time;
+
+  const nowDate = new Date();
+
+  let year = String(nowDate.getFullYear());
+
+  let month = String(nowDate.getMonth());
+  let day = String(nowDate.getDate());
+  let hours = String(nowDate.getHours());
+  let minutes = String(nowDate.getMinutes());
+  let seconds = String(nowDate.getSeconds());
+  let milliseconds = String(nowDate.getMilliseconds());
+
+  month = prependZero(month);
+  day = prependZero(day);
+  hours = prependZero(hours);
+  minutes = prependZero(minutes);
+  seconds = prependZero(seconds);
+  milliseconds = prependZero(milliseconds);
+
+  date = `${year}${splitDate}${month}${splitDate}${day}`;
+  time = `${hours}${splitTime}${minutes}${splitTime}${seconds}`;
+
+  return {
+    date,
+    time,
+    year,
+    month,
+    day,
+    hours,
+    minutes,
+    seconds,
+    milliseconds,
+  };
 }
 
 function formatMessage(message, type) {
-  return `${civilianDateTime()} - [${type}]: ${message}\n`;
+  const { date, time } = getDateTime();
+  return `${date} ${time} - [${type}]: ${message}\n`;
 }
 
 function logWrite(message, type = "****") {
