@@ -1,7 +1,13 @@
-import fs from "fs";
-import path from "path";
-import zlib from "zlib";
 import logWrite from "./utils/log.mjs";
+import {
+  changeExt,
+  copyFiles,
+  deleteFile,
+  getExtFile,
+  getFilesList,
+  getFullName,
+  getTimeCreateFile,
+} from "./utils/file.mjs";
 
 const TYPE_MESSAGE_SYST = "SYST";
 const TYPE_MESSAGE_INFO = "INFO";
@@ -23,71 +29,14 @@ class workFS {
     return this._storageTime;
   }
 
-  getFullName(dir, fileName) {
-    return path.join(dir, fileName);
-  }
-  getExtFile(fileName) {
-    return path.extname(fileName);
-  }
-  getFilesList(path) {
-    return fs.readdirSync(path);
-  }
-  fileExists(fileName) {
-    return fs.existsSync(fileName);
-  }
-  changeExt(fileName, fromExt, toExt) {
-    const regexp = new RegExp(fromExt + "$");
-    return fileName.replace(regexp, toExt);
-  }
-  timeCreateFile(fileName) {
-    let stat;
-    if (this.fileExists(fileName))
-      stat = fs.statSync(fileName, (err) => {
-        if (err) throw err;
-      });
-    return stat ? stat.ctime : 0;
-  }
-  copyFiles(srcFile, dstFile) {
-    return new Promise((resolve, reject) => {
-      const read = fs.createReadStream(srcFile);
-      read.on("error", (err) => reject(err));
-      const write = fs.createWriteStream(dstFile);
-      write.on("error", (err) => reject(err));
-      write.on("close", () => resolve(dstFile));
-      read.pipe(write);
-    });
-  }
-  deleteFile(fileName) {
-    if (this.fileExists(fileName))
-      fs.unlink(fileName, (err) => {
-        if (err) throw err;
-        logWrite(`${fileName} was deleted.`);
-      });
-  }
-  zipFile(srcFile, archiv) {
-    return new Promise((resolve, reject) => {
-      let readableStream = fs.createReadStream(srcFile, "utf8");
-      readableStream.on("error", (err) => reject(err));
-      let writeableStream = fs.createWriteStream(archiv);
-      writeableStream.on("error", (err) => reject(err));
-
-      readableStream.on("close", () => {
-        this.deleteFile(srcFile);
-        resolve(srcFile);
-      });
-
-      let gzip = zlib.createGzip();
-      readableStream.pipe(gzip).pipe(writeableStream);
-    });
-  }
   async backUpCopy() {
     logWrite("Backup.");
 
-    const srcFileList = this.getFilesList(this.src);
+    const srcFileList = getFilesList(this.src);
 
     const filterFileList = srcFileList.filter((el) => {
-      const srcFullName = this.getFullName(this.src, el);
-      const fileTime = this.timeCreateFile(srcFullName);
+      const srcFullName = getFullName(this.src, el);
+      const fileTime = getTimeCreateFile(srcFullName);
 
       if (!fileTime) return false;
 
@@ -96,16 +45,16 @@ class workFS {
       // TODO add to '.gz' in filter
       return (
         new Date(age).getDate() <= this.storageTime &&
-        this.getExtFile(el) === ".bak" &&
-        !this.fileExists(this.getFullName(this.dst, el))
+        getExtFile(el) === ".bak" &&
+        !fileExists(getFullName(this.dst, el))
       );
     });
 
     if (filterFileList.length > 0) {
       for (let file of filterFileList) {
-        const srcFullName = this.getFullName(this.src, file);
-        const dstFullName = this.getFullName(this.dst, file);
-        await this.copyFiles(srcFullName, dstFullName)
+        const srcFullName = getFullName(this.src, file);
+        const dstFullName = getFullName(this.dst, file);
+        await copyFiles(srcFullName, dstFullName)
           .then((res) => logWrite(`File ${res} copied.`, TYPE_MESSAGE_INFO))
           .catch((err) => logWrite(err));
       }
@@ -115,49 +64,48 @@ class workFS {
   }
   garbageCollector() {
     logWrite("Garbage.");
-    const dstFileList = this.getFilesList(this.dst);
+    const dstFileList = getFilesList(this.dst);
 
     const filterFileList = dstFileList.filter((el) => {
-      const fullName = this.getFullName(this.dst, el);
-      const fileTime = this.timeCreateFile(fullName);
+      const fullName = getFullName(this.dst, el);
+      const fileTime = getTimeCreateFile(fullName);
 
       if (!fileTime) return false;
 
       const age = new Date() - new Date(fileTime);
       return (
         new Date(age).getDate() > this.storageTime &&
-        (this.getExtFile(fullName) === ".bak" ||
-          this.getExtFile(fullName) === ".gz")
+        (getExtFile(fullName) === ".bak" || getExtFile(fullName) === ".gz")
       );
     });
     filterFileList.forEach((file) => {
-      const fullName = this.getFullName(this.dst, file);
-      if (this.fileExists(fullName)) this.deleteFile(fullName);
+      const fullName = getFullName(this.dst, file);
+      if (fileExists(fullName)) deleteFile(fullName);
     });
     logWrite("Garbage.");
   }
   async zippedFiles() {
     logWrite("Zipped.");
-    const dstFileList = this.getFilesList(this.dst);
+    const dstFileList = getFilesList(this.dst);
 
     const filterFileList = dstFileList.filter((file) => {
-      const fullName = this.getFullName(this.dst, file);
-      const fileTime = this.timeCreateFile(fullName);
+      const fullName = getFullName(this.dst, file);
+      const fileTime = getTimeCreateFile(fullName);
 
       if (!fileTime) return false;
 
       const age = new Date() - new Date(fileTime);
       return (
         new Date(age).getDate() <= this.storageTime &&
-        this.getExtFile(fullName) === ".bak"
+        getExtFile(fullName) === ".bak"
       );
     });
 
     if (filterFileList.length > 0) {
       for (let file of filterFileList) {
-        const nameArchiv = this.changeExt(file, ".bak", ".gz");
-        const srcFullName = this.getFullName(this.dst, file);
-        const dstFullName = this.getFullName(this.dst, nameArchiv);
+        const nameArchiv = changeExt(file, ".bak", ".gz");
+        const srcFullName = getFullName(this.dst, file);
+        const dstFullName = getFullName(this.dst, nameArchiv);
         await this.zipFile(srcFullName, dstFullName)
           .then((res) => logWrite(`Zipped file ${res}.`))
           .catch((err) => logWrite(err));
