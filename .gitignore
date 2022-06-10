@@ -1,8 +1,5 @@
 /node_modules
 /dst
 /src
-<<<<<<< HEAD
 run-tasks.log.txt
-=======
-run-tasks.log.txt
->>>>>>> release
+package-lock.json
