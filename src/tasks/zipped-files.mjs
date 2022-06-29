@@ -16,6 +16,11 @@ import {
 async function zippedFiles(pathSource, pathDestination, storageTime) {
   logWrite("Zipped.", TYPE_MESSAGE_SYST);
 
+  if (!fileExists(pathSource) || !fileExists(pathDestination)) {
+    logWrite("Incorrect path.", TYPE_MESSAGE_ERROR);
+    return;
+  }
+
   const srcFileList = getFilesList(pathSource);
 
   const filterFileList = srcFileList.filter((file) => {

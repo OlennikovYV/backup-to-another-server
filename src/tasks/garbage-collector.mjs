@@ -4,6 +4,11 @@ import { TYPE_MESSAGE_SYST } from "../utils/constans.mjs";
 function garbageCollector(pathSource, storageTime) {
   logWrite("Garbage.", TYPE_MESSAGE_SYST);
 
+  if (!fileExists(pathSource) || !fileExists(pathDestination)) {
+    logWrite("Incorrect path.", TYPE_MESSAGE_ERROR);
+    return;
+  }
+
   const sourceFileList = getFilesList(pathSource);
 
   const filterFileList = sourceFileList.filter((el) => {

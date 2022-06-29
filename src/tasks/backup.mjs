@@ -15,6 +15,11 @@ import {
 async function backUpCopy(pathSource, pathDestination, storageTime) {
   logWrite("Backup.", TYPE_MESSAGE_SYST);
 
+  if (!fileExists(pathSource) || !fileExists(pathDestination)) {
+    logWrite("Incorrect path.", TYPE_MESSAGE_ERROR);
+    return;
+  }
+
   const srcFileList = getFilesList(pathSource);
 
   const filterFileList = srcFileList.filter((el) => {
