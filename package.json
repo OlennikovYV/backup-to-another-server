@@ -1,16 +1,16 @@
 {
-    "name": "backup-to-another-server",
-    "author": {
-        "name": "Olennikov Yury",
-        "email": "olennikovyv@mail.ru",
-        "url": "https://github.com/OlennikovYV/"
-    },
-    "description": "Copying database backups to another server",
-    "url": "https://github.com/olennikovyv/backup-to-another-server.git",
-    "main": "app.js",
-    "private": true,
-    "type": "module",
-    "dependencies": {
-        "zlib": "^1.0.5"
-    }
+  "name": "backup-to-another-server",
+  "author": {
+    "name": "Olennikov Yury",
+    "email": "olennikovyv@mail.ru",
+    "url": "https://github.com/OlennikovYV/"
+  },
+  "description": "Copying database backups to another server",
+  "url": "https://github.com/olennikovyv/backup-to-another-server.git",
+  "main": "app.js",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "zlib": "^1.0.5"
+  }
 }

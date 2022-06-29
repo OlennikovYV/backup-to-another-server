@@ -1,5 +1,5 @@
 /node_modules
-/dst
-/src
-run-tasks.log.txt
+/test-destination
+/test-source
+/src/run-tasks.log.txt
 package-lock.json

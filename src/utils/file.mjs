@@ -3,28 +3,28 @@ import path from "path";
 
 import zlib from "zlib";
 
-export function getFullName(dir, fileName) {
+function getFullName(dir, fileName) {
   return path.join(dir, fileName);
 }
 
-export function getExtFile(fileName) {
+function getExtFile(fileName) {
   return path.extname(fileName);
 }
 
-export function getFilesList(path) {
+function getFilesList(path) {
   return fs.readdirSync(path);
 }
 
-export function fileExists(fileName) {
+function fileExists(fileName) {
   return fs.existsSync(fileName);
 }
 
-export function changeExt(fileName, fromExt, toExt) {
+function changeExt(fileName, fromExt, toExt) {
   const regexp = new RegExp(fromExt + "$");
   return fileName.replace(regexp, toExt);
 }
 
-export function getTimeCreateFile(fileName) {
+function getTimeCreateFile(fileName) {
   let stat;
   if (fileExists(fileName))
     stat = fs.statSync(fileName, (err) => {
@@ -33,7 +33,7 @@ export function getTimeCreateFile(fileName) {
   return stat ? stat.ctime : 0;
 }
 
-export function copyFiles(srcFile, dstFile) {
+function copyFiles(srcFile, dstFile) {
   return new Promise((resolve, reject) => {
     const read = fs.createReadStream(srcFile);
     read.on("error", (err) => reject(err));
@@ -44,7 +44,7 @@ export function copyFiles(srcFile, dstFile) {
   });
 }
 
-export function deleteFile(fileName) {
+function deleteFile(fileName) {
   if (fileExists(fileName))
     fs.unlink(fileName, (err) => {
       if (err) throw err;
@@ -52,7 +52,7 @@ export function deleteFile(fileName) {
     });
 }
 
-export function zipFile(srcFile, archiv) {
+function zipFile(srcFile, archiv) {
   return new Promise((resolve, reject) => {
     let readableStream = fs.createReadStream(srcFile, "utf8");
     readableStream.on("error", (err) => reject(err));
@@ -68,3 +68,15 @@ export function zipFile(srcFile, archiv) {
     readableStream.pipe(gzip).pipe(writeableStream);
   });
 }
+
+export {
+  getFullName,
+  getExtFile,
+  getFilesList,
+  fileExists,
+  changeExt,
+  getTimeCreateFile,
+  copyFiles,
+  deleteFile,
+  zipFile,
+};

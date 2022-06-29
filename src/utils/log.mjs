@@ -46,7 +46,7 @@ function formatMessage(message, type) {
   return `${date} ${time} - [${type}]: ${message}\n`;
 }
 
-function logWrite(message, type = "****") {
+function logWrite(message, type) {
   const logFilename = ".\\run-tasks.log.txt";
 
   let stream = fs.createWriteStream(logFilename, { flags: "a" });
