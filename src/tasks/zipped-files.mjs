@@ -11,12 +11,13 @@ import {
   getExtFile,
   changeExt,
   zipFile,
+  fileExists,
 } from "../utils/file.mjs";
 
 async function zippedFiles(pathSource, pathDestination, storageTime) {
   logWrite("Zipped.", TYPE_MESSAGE_SYST);
 
-  if (!fileExists(pathSource) || !fileExists(pathDestination)) {
+  if (!fileExists(pathSource) && !fileExists(pathDestination)) {
     logWrite("Incorrect path.", TYPE_MESSAGE_ERROR);
     return;
   }
@@ -51,4 +52,4 @@ async function zippedFiles(pathSource, pathDestination, storageTime) {
   logWrite("Zipped finish.", TYPE_MESSAGE_SYST);
 }
 
-export { zippedFiles };
+export default zippedFiles;

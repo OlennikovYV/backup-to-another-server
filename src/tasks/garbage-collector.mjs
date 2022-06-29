@@ -1,10 +1,11 @@
 import logWrite from "../utils/log.mjs";
-import { TYPE_MESSAGE_SYST } from "../utils/constans.mjs";
+import { TYPE_MESSAGE_SYST, TYPE_MESSAGE_ERROR } from "../utils/constans.mjs";
+import { fileExists } from "../utils/file.mjs";
 
 function garbageCollector(pathSource, storageTime) {
   logWrite("Garbage.", TYPE_MESSAGE_SYST);
 
-  if (!fileExists(pathSource) || !fileExists(pathDestination)) {
+  if (!fileExists(pathSource)) {
     logWrite("Incorrect path.", TYPE_MESSAGE_ERROR);
     return;
   }
@@ -32,4 +33,4 @@ function garbageCollector(pathSource, storageTime) {
   logWrite("Garbage.", TYPE_MESSAGE_SYST);
 }
 
-export { garbageCollector };
+export default garbageCollector;

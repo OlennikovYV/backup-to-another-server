@@ -47,16 +47,18 @@ function formatMessage(message, type) {
 }
 
 function logWrite(message, type) {
-  const logFilename = ".\\run-tasks.log.txt";
+  return new Promise((resolve, reject) => {
+    const logFilename = ".\\run-tasks.log.txt";
 
-  let stream = fs.createWriteStream(logFilename, { flags: "a" });
+    let stream = fs.createWriteStream(logFilename, { flags: "a" });
 
-  stream.on("error", (err) => {
-    console.log(`${err.name} log file '${file}'. ${err.message}`);
+    stream.on("error", (err) => {
+      console.log(`${err.name} log file '${file}'. ${err.message}`);
+    });
+
+    stream.write(formatMessage(message, type));
+    stream.on("close", () => resolve(srcFile));
   });
-
-  stream.write(formatMessage(message, type));
-  stream.end();
 }
 
 export default logWrite;

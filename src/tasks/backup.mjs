@@ -5,6 +5,7 @@ import {
   TYPE_MESSAGE_ERROR,
 } from "../utils/constans.mjs";
 import {
+  getFilesList,
   copyFiles,
   getFullName,
   getTimeCreateFile,
@@ -15,8 +16,9 @@ import {
 async function backUpCopy(pathSource, pathDestination, storageTime) {
   logWrite("Backup.", TYPE_MESSAGE_SYST);
 
-  if (!fileExists(pathSource) || !fileExists(pathDestination)) {
-    logWrite("Incorrect path.", TYPE_MESSAGE_ERROR);
+  if (!(fileExists(pathSource) && fileExists(pathDestination))) {
+    await logWrite("Incorrect path.", TYPE_MESSAGE_ERROR);
+    await logWrite("Backup finish.", TYPE_MESSAGE_SYST);
     return;
   }
 
@@ -43,12 +45,12 @@ async function backUpCopy(pathSource, pathDestination, storageTime) {
       const srcFullName = getFullName(pathSource, file);
       const dstFullName = getFullName(pathDestination, file);
       await copyFiles(srcFullName, dstFullName)
-        .then((res) => logWrite(`File ${res} copied.`, TYPE_MESSAGE_INFO))
-        .catch((err) => logWrite(err, TYPE_MESSAGE_ERROR));
+        .then((res) => await logWrite(`File ${res} copied.`, TYPE_MESSAGE_INFO))
+        .catch((err) => await logWrite(err, TYPE_MESSAGE_ERROR));
     }
-  } else logWrite("No files to copy.", TYPE_MESSAGE_INFO);
+  } else await logWrite("No files to copy.", TYPE_MESSAGE_INFO);
 
-  logWrite("Backup finish.", TYPE_MESSAGE_SYST);
+  await logWrite("Backup finish.", TYPE_MESSAGE_SYST);
 }
 
-export { backUpCopy };
+export default backUpCopy;
