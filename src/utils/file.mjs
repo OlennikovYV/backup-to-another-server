@@ -2,17 +2,17 @@ import fs from "fs";
 import path from "path";
 import zlib from "zlib";
 
-import * as mLog from "./log.mjs";
+import * as mLog from "./log-file.mjs";
 
-export function getFullName(dir, fileName) {
+export function getFullPath(dir, fileName) {
   return path.join(dir, fileName);
 }
 
-export function getExtFile(fileName) {
+export function getFileExtension(fileName) {
   return path.extname(fileName);
 }
 
-export function getFilesList(path) {
+export function getFilesListFromPath(path) {
   return fs.readdirSync(path);
 }
 
@@ -20,28 +20,32 @@ export function fileExists(fileName) {
   return fs.existsSync(fileName);
 }
 
-export function changeExt(fileName, fromExt, toExt) {
-  const regexp = new RegExp(fromExt + "$");
-  return fileName.replace(regexp, toExt);
+export function changeExtension(
+  fileName,
+  originalExtension,
+  replaceableExtension
+) {
+  const regexp = new RegExp(originalExtension + "$");
+  return fileName.replace(regexp, replaceableExtension);
 }
 
-export function getTimeCreateFile(fileName) {
-  let stat;
+export function getFileCreationDate(fileName) {
+  let fileInformation;
   if (fileExists(fileName))
-    stat = fs.statSync(fileName, (err) => {
+    fileInformation = fs.statSync(fileName, (err) => {
       if (err) throw err;
     });
-  return stat ? stat.ctime : 0;
+  return fileInformation ? fileInformation.ctime : 0;
 }
 
 export function copyFiles(srcFile, dstFile) {
   return new Promise((resolve, reject) => {
-    const read = fs.createReadStream(srcFile);
-    read.on("error", (err) => reject(err));
-    const write = fs.createWriteStream(dstFile);
-    write.on("error", (err) => reject(err));
-    write.on("close", () => resolve(dstFile));
-    read.pipe(write);
+    const readStream = fs.createReadStream(srcFile);
+    readStream.on("error", (err) => reject(err));
+    const writeStream = fs.createWriteStream(dstFile);
+    writeStream.on("error", (err) => reject(err));
+    writeStream.on("close", () => resolve(dstFile));
+    readStream.pipe(writeStream);
   });
 }
 
@@ -49,15 +53,17 @@ export function deleteFile(fileName) {
   if (fileExists(fileName))
     fs.unlink(fileName, (err) => {
       if (err) throw err;
-      mLog.logWrite(`${fileName} was deleted.`, mLog.TYPE_MESSAGE_INFO);
+      mLog.writeMessage(`${fileName} was deleted.`, mLog.TYPE_MESSAGE_INFO);
     });
 }
 
 export function zipFile(srcFile, archiv) {
   return new Promise((resolve, reject) => {
+    let gzip = zlib.createGzip();
     let readableStream = fs.createReadStream(srcFile, "utf8");
-    readableStream.on("error", (err) => reject(err));
     let writeableStream = fs.createWriteStream(archiv);
+
+    readableStream.on("error", (err) => reject(err));
     writeableStream.on("error", (err) => reject(err));
 
     readableStream.on("close", () => {
@@ -65,7 +71,6 @@ export function zipFile(srcFile, archiv) {
       resolve(srcFile);
     });
 
-    let gzip = zlib.createGzip();
     readableStream.pipe(gzip).pipe(writeableStream);
   });
 }

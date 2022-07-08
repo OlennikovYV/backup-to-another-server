@@ -1,15 +1,15 @@
-import { backUpCopy } from "./tasks/backup.mjs";
+import { copyBackupFiles } from "./tasks/copy-backup-files.mjs";
 import { zippedFiles } from "./tasks/zipped-files.mjs";
-import { garbageCollector } from "./tasks/garbage-collector.mjs";
+import { deleteExpiredFiles } from "./tasks/delete-expired-files.mjs";
 
 const pathSource = "D:\\project\\backup-to-another-server\\test-source";
 const pathDestination =
   "D:\\project\\backup-to-another-server\\test-destination";
-const storageTime = 100;
+const expirationInDays = 100;
 
 (async function runTasks() {
   // TODO Revise the method of starting tasks
-  await backUpCopy(pathSource, pathDestination, storageTime);
-  await zippedFiles(pathDestination, storageTime);
-  garbageCollector(pathSource, storageTime);
+  await copyBackupFiles(pathSource, pathDestination, expirationInDays);
+  await zippedFiles(pathDestination, expirationInDays);
+  deleteExpiredFiles(pathSource, expirationInDays);
 })();

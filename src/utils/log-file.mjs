@@ -4,11 +4,11 @@ export const TYPE_MESSAGE_SYST = "Task";
 export const TYPE_MESSAGE_INFO = "Info";
 export const TYPE_MESSAGE_ERROR = "Error";
 
-function prependZero(time) {
-  return time < 10 ? "0" + time : time;
+function prependZero(number) {
+  return number < 10 ? "0" + number : number;
 }
 
-function getDateTime(splitDate = "-", splitTime = ":") {
+function getDateTimeNow(splitDate = "-", splitTime = ":") {
   let date, time;
 
   const nowDate = new Date();
@@ -46,18 +46,18 @@ function getDateTime(splitDate = "-", splitTime = ":") {
 }
 
 function formatMessage(message, type) {
-  const { date, time } = getDateTime();
+  const { date, time } = getDateTimeNow();
   return `${date} ${time} - [${type}]: ${message}\n`;
 }
 
-export function logWrite(message, type) {
+export function writeMessage(message, type) {
   return new Promise((resolve, reject) => {
     const logFilename = ".\\test-destination\\run-tasks.log.txt";
 
     let stream = fs.createWriteStream(logFilename, { flags: "a" });
 
-    stream.on("error", (err) => {
-      console.log(`${err.name} log file '${file}'. ${err.message}`);
+    stream.on("error", (error) => {
+      console.log(`${error.name} log file '${file}'. ${error.message}`);
     });
 
     stream.write(formatMessage(message, type));
