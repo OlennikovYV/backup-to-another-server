@@ -1,5 +1,9 @@
 import fs from "fs";
 
+export const TYPE_MESSAGE_SYST = "Task";
+export const TYPE_MESSAGE_INFO = "Info";
+export const TYPE_MESSAGE_ERROR = "Error";
+
 function prependZero(time) {
   return time < 10 ? "0" + time : time;
 }
@@ -46,9 +50,9 @@ function formatMessage(message, type) {
   return `${date} ${time} - [${type}]: ${message}\n`;
 }
 
-function logWrite(message, type) {
+export function logWrite(message, type) {
   return new Promise((resolve, reject) => {
-    const logFilename = ".\\run-tasks.log.txt";
+    const logFilename = ".\\test-destination\\run-tasks.log.txt";
 
     let stream = fs.createWriteStream(logFilename, { flags: "a" });
 
@@ -60,5 +64,3 @@ function logWrite(message, type) {
     stream.on("close", () => resolve(srcFile));
   });
 }
-
-export default logWrite;

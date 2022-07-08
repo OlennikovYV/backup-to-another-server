@@ -1,36 +1,34 @@
-import logWrite from "../utils/log.mjs";
-import { TYPE_MESSAGE_SYST, TYPE_MESSAGE_ERROR } from "../utils/constans.mjs";
-import { fileExists } from "../utils/file.mjs";
+import * as mLog from "../utils/log.mjs";
+import * as mFile from "../utils/file.mjs";
 
-function garbageCollector(pathSource, storageTime) {
-  logWrite("Garbage.", TYPE_MESSAGE_SYST);
+export function garbageCollector(pathSource, storageTime) {
+  mLog.logWrite("Garbage.", mLog.TYPE_MESSAGE_SYST);
 
-  if (!fileExists(pathSource)) {
-    logWrite("Incorrect path.", TYPE_MESSAGE_ERROR);
+  if (!mFile.fileExists(pathSource)) {
+    mLog.logWrite("Incorrect path.", mLog.TYPE_MESSAGE_ERROR);
     return;
   }
 
-  const sourceFileList = getFilesList(pathSource);
+  const sourceFileList = mFile.getFilesList(pathSource);
 
   const filterFileList = sourceFileList.filter((el) => {
-    const fullName = getFullName(pathSource, el);
-    const fileTime = getTimeCreateFile(fullName);
+    const fullName = mFile.getFullName(pathSource, el);
+    const fileTime = mFile.getTimeCreateFile(fullName);
 
     if (!fileTime) return false;
 
     const ageFile = new Date() - new Date(fileTime);
     return (
       new Date(ageFile).getDate() > storageTime &&
-      (getExtFile(fullName) === ".bak" || getExtFile(fullName) === ".gz")
+      (mFile.getExtFile(fullName) === ".bak" ||
+        mFile.getExtFile(fullName) === ".gz")
     );
   });
 
   filterFileList.forEach((file) => {
-    const fullName = getFullName(pathSource, file);
-    if (fileExists(fullName)) deleteFile(fullName);
+    const fullName = mFile.getFullName(pathSource, file);
+    if (mFile.fileExists(fullName)) mFile.deleteFile(fullName);
   });
 
-  logWrite("Garbage.", TYPE_MESSAGE_SYST);
+  mLog.logWrite("Garbage.", mLog.TYPE_MESSAGE_SYST);
 }
-
-export default garbageCollector;

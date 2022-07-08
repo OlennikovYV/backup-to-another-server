@@ -1,30 +1,31 @@
 import fs from "fs";
 import path from "path";
-
 import zlib from "zlib";
 
-function getFullName(dir, fileName) {
+import * as mLog from "./log.mjs";
+
+export function getFullName(dir, fileName) {
   return path.join(dir, fileName);
 }
 
-function getExtFile(fileName) {
+export function getExtFile(fileName) {
   return path.extname(fileName);
 }
 
-function getFilesList(path) {
+export function getFilesList(path) {
   return fs.readdirSync(path);
 }
 
-function fileExists(fileName) {
+export function fileExists(fileName) {
   return fs.existsSync(fileName);
 }
 
-function changeExt(fileName, fromExt, toExt) {
+export function changeExt(fileName, fromExt, toExt) {
   const regexp = new RegExp(fromExt + "$");
   return fileName.replace(regexp, toExt);
 }
 
-function getTimeCreateFile(fileName) {
+export function getTimeCreateFile(fileName) {
   let stat;
   if (fileExists(fileName))
     stat = fs.statSync(fileName, (err) => {
@@ -33,7 +34,7 @@ function getTimeCreateFile(fileName) {
   return stat ? stat.ctime : 0;
 }
 
-function copyFiles(srcFile, dstFile) {
+export function copyFiles(srcFile, dstFile) {
   return new Promise((resolve, reject) => {
     const read = fs.createReadStream(srcFile);
     read.on("error", (err) => reject(err));
@@ -44,15 +45,15 @@ function copyFiles(srcFile, dstFile) {
   });
 }
 
-function deleteFile(fileName) {
+export function deleteFile(fileName) {
   if (fileExists(fileName))
     fs.unlink(fileName, (err) => {
       if (err) throw err;
-      logWrite(`${fileName} was deleted.`);
+      mLog.logWrite(`${fileName} was deleted.`, mLog.TYPE_MESSAGE_INFO);
     });
 }
 
-function zipFile(srcFile, archiv) {
+export function zipFile(srcFile, archiv) {
   return new Promise((resolve, reject) => {
     let readableStream = fs.createReadStream(srcFile, "utf8");
     readableStream.on("error", (err) => reject(err));
@@ -68,15 +69,3 @@ function zipFile(srcFile, archiv) {
     readableStream.pipe(gzip).pipe(writeableStream);
   });
 }
-
-export {
-  getFullName,
-  getExtFile,
-  getFilesList,
-  fileExists,
-  changeExt,
-  getTimeCreateFile,
-  copyFiles,
-  deleteFile,
-  zipFile,
-};

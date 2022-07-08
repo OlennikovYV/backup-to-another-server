@@ -1,55 +1,49 @@
-import logWrite from "../utils/log.mjs";
-import {
-  TYPE_MESSAGE_SYST,
-  TYPE_MESSAGE_INFO,
-  TYPE_MESSAGE_ERROR,
-} from "../utils/constans.mjs";
-import {
-  getFilesList,
-  getFullName,
-  getTimeCreateFile,
-  getExtFile,
-  changeExt,
-  zipFile,
-  fileExists,
-} from "../utils/file.mjs";
+import * as mLog from "../utils/log.mjs";
+import * as mFile from "../utils/file.mjs";
 
-async function zippedFiles(pathSource, pathDestination, storageTime) {
-  logWrite("Zipped.", TYPE_MESSAGE_SYST);
+export async function zippedFiles(pathDestination, storageTime) {
+  mLog.logWrite("Zipped.", mLog.TYPE_MESSAGE_SYST);
 
-  if (!fileExists(pathSource) && !fileExists(pathDestination)) {
-    logWrite("Incorrect path.", TYPE_MESSAGE_ERROR);
+  if (!mFile.fileExists(pathDestination)) {
+    mLog.logWrite("Incorrect path.", mLog.TYPE_MESSAGE_ERROR);
     return;
   }
 
-  const srcFileList = getFilesList(pathSource);
+  const srcFileList = mFile.getFilesList(pathDestination);
 
   const filterFileList = srcFileList.filter((file) => {
-    const fullName = getFullName(pathSource, file);
-    const fileTime = getTimeCreateFile(fullName);
+    const fullName = mFile.getFullName(pathDestination, file);
+    const fileTime = mFile.getTimeCreateFile(fullName);
 
     if (!fileTime) return false;
 
     const age = new Date() - new Date(fileTime);
+
     return (
-      new Date(age).getDate() <= storageTime && getExtFile(fullName) === ".bak"
+      new Date(age).getDate() <= storageTime &&
+      mFile.getExtFile(fullName) === ".bak"
     );
   });
 
   if (filterFileList.length > 0) {
     for (let file of filterFileList) {
-      const nameArchiv = changeExt(file, ".bak", ".gz");
-      const srcFullName = getFullName(pathSource, file);
-      const dstFullName = getFullName(pathDestination, nameArchiv);
-      await zipFile(srcFullName, dstFullName)
-        .then((res) => logWrite(`Zipped file ${res}.`), TYPE_MESSAGE_INFO)
-        .catch((err) => logWrite(err, TYPE_MESSAGE_ERROR));
+      const nameArchiv = mFile.changeExt(file, ".bak", ".gz");
+      const srcFullName = mFile.getFullName(pathDestination, file);
+      const dstFullName = mFile.getFullName(pathDestination, nameArchiv);
+
+      await mFile
+        .zipFile(srcFullName, dstFullName)
+        .then((res) => {
+          mLog.logWrite(`Zipped file ${res}.`, mLog.TYPE_MESSAGE_INFO);
+          return;
+        })
+        .catch((err) => mLog.logWrite(err, mLog.TYPE_MESSAGE_ERROR));
     }
   } else {
-    logWrite("No files to zipped.", TYPE_MESSAGE_INFO);
+    mLog.logWrite("No files to zipped.", mLog.TYPE_MESSAGE_INFO);
   }
 
-  logWrite("Zipped finish.", TYPE_MESSAGE_SYST);
-}
+  mLog.logWrite("Zipped finish.", mLog.TYPE_MESSAGE_SYST);
 
-export default zippedFiles;
+  return;
+}
