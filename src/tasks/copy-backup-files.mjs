@@ -15,6 +15,7 @@ export function copyBackupFiles(pathSource, pathDestination, expirationInDays) {
   const filterFilesList = srcFileList.filter((el) => {
     const srcFullName = file.getFullPath(pathSource, el);
     const fileTime = file.getFileCreationDate(srcFullName);
+    const nameArchiv = file.changeExtension(el, ".bak", ".gz");
 
     if (!fileTime) return false;
 
@@ -24,7 +25,8 @@ export function copyBackupFiles(pathSource, pathDestination, expirationInDays) {
     return (
       new Date(age).getDate() <= expirationInDays &&
       file.getFileExtension(el) === ".bak" &&
-      !file.fileExists(file.getFullPath(pathDestination, el))
+      !file.fileExists(file.getFullPath(pathDestination, el)) &&
+      !file.fileExists(file.getFullPath(pathDestination, nameArchiv))
     );
   });
 
