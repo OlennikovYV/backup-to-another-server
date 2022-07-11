@@ -31,11 +31,31 @@ export function zippedFiles(pathDestination, expirationInDays) {
       const srcFullName = file.getFullPath(pathDestination, fileName);
       const dstFullName = file.getFullPath(pathDestination, nameArchiv);
 
-      // TODO check error
-      file.zipFile(srcFullName, dstFullName);
-      logFile.writeMessage(`  ${fileName} zipped.`, logFile.TYPE_MESSAGE_INFO);
-      file.deleteFile(srcFullName);
-      logFile.writeMessage(`  ${fileName} deleted.`, logFile.TYPE_MESSAGE_INFO);
+      try {
+        file.zipFile(srcFullName, dstFullName);
+        logFile.writeMessage(
+          `  ${nameArchiv} zipped.`,
+          logFile.TYPE_MESSAGE_INFO
+        );
+      } catch (err) {
+        if (err.type === "read")
+          logFile.writeMessage(`Unable to read file ${err.file}.`);
+        if (err.type === "write")
+          logFile.writeMessage(`Unable to write file ${err.file}.`);
+        if (err.type === "gzip")
+          logFile.writeMessage(`Unable to zip file ${err.file}.`);
+      }
+
+      try {
+        file.deleteFile(srcFullName);
+        logFile.writeMessage(
+          `  ${fileName} deleted.`,
+          logFile.TYPE_MESSAGE_INFO
+        );
+      } catch (err) {
+        if (err.type === "delete")
+          logFile.writeMessage(`Unable to delete file ${err.file}.`);
+      }
     }
   } else {
     logFile.writeMessage("No files to zipped.", logFile.TYPE_MESSAGE_INFO);

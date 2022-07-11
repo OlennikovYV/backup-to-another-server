@@ -28,7 +28,11 @@ export function changeExtension(
 }
 
 export function deleteFile(fileName) {
-  fs.unlinkSync(fileName);
+  try {
+    fs.unlinkSync(fileName);
+  } catch {
+    throw { type: "delete", file: fileName };
+  }
 }
 
 export function getFileCreationDate(fileName) {
@@ -41,22 +45,40 @@ export function getFileCreationDate(fileName) {
 }
 
 function readFileToBuffer(fileName) {
-  const fileDescriptor = fs.openSync(fileName);
-  const buffer = fs.readFileSync(fileDescriptor);
-  fs.closeSync(fileDescriptor);
-  return buffer;
+  try {
+    const fileDescriptor = fs.openSync(fileName);
+    const buffer = fs.readFileSync(fileDescriptor);
+    fs.closeSync(fileDescriptor);
+    return buffer;
+  } catch {
+    throw { type: "read", file: fileName };
+  }
 }
 
 function writeFileFromBuffer(fileName, buffer) {
-  fs.writeFileSync(fileName, buffer);
+  try {
+    fs.writeFileSync(fileName, buffer);
+  } catch {
+    throw { type: "write", file: fileName };
+  }
 }
 
 export function zipFile(srcFile, archiv) {
-  let buffer = readFileToBuffer(srcFile);
-  buffer = zlib.gzipSync(buffer);
-  writeFileFromBuffer(archiv, buffer);
+  try {
+    let buffer = readFileToBuffer(srcFile);
+    buffer = zlib.gzipSync(buffer);
+    writeFileFromBuffer(archiv, buffer);
+  } catch (err) {
+    if (err.type) throw err;
+    throw { type: "gzip", file: srcFile };
+  }
 }
 
 export function copyFile(srcFile, dstFile) {
-  writeFileFromBuffer(dstFile, readFileToBuffer(srcFile));
+  try {
+    const buffer = readFileToBuffer(srcFile);
+    writeFileFromBuffer(dstFile, buffer);
+  } catch (err) {
+    throw err;
+  }
 }

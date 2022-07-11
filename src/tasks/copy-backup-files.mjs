@@ -32,8 +32,16 @@ export function copyBackupFiles(pathSource, pathDestination, expirationInDays) {
     for (let fileName of filterFilesList) {
       const srcFullName = file.getFullPath(pathSource, fileName);
       const dstFullName = file.getFullPath(pathDestination, fileName);
-      // TODO check error
-      file.copyFile(srcFullName, dstFullName);
+
+      try {
+        file.copyFile(srcFullName, dstFullName);
+      } catch (err) {
+        if (err.type === "read")
+          logFile.writeMessage(`Unable to read file ${err.file}.`);
+        if (err.type === "write")
+          logFile.writeMessage(`Unable to write file ${err.file}.`);
+      }
+
       logFile.writeMessage(`  ${fileName} copied.`, logFile.TYPE_MESSAGE_INFO);
     }
   } else logFile.writeMessage("No files to copy.", logFile.TYPE_MESSAGE_INFO);
