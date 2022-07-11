@@ -27,8 +27,12 @@ export function deleteExpiredFiles(pathSource, expirationInDays) {
 
   filterFilesList.forEach((fileName) => {
     const fullName = file.getFullPath(pathSource, fileName);
-    if (file.fileExists(fullName)) file.deleteFile(fullName);
+    if (file.fileExists(fullName)) {
+      // TODO check error
+      file.deleteFile(fullName);
+      logFile.writeMessage(`  ${fileName} deleted.`, logFile.TYPE_MESSAGE_INFO);
+    }
   });
 
-  logFile.writeMessage("Garbage.", logFile.TYPE_MESSAGE_SYST);
+  logFile.writeMessage("Garbage finish.", logFile.TYPE_MESSAGE_SYST);
 }

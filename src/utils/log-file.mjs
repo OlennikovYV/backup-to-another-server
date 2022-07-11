@@ -51,16 +51,7 @@ function formatMessage(message, type) {
 }
 
 export function writeMessage(message, type) {
-  return new Promise((resolve, reject) => {
-    const logFilename = ".\\test-destination\\run-tasks.log.txt";
-
-    let stream = fs.createWriteStream(logFilename, { flags: "a" });
-
-    stream.on("error", (error) => {
-      console.log(`${error.name} log file '${file}'. ${error.message}`);
-    });
-
-    stream.write(formatMessage(message, type));
-    stream.on("close", () => resolve(srcFile));
-  });
+  const dateLogFile = getDateTimeNow("_").date;
+  const logFilename = `.\\test-destination\\run-tasks-${dateLogFile}.log.txt`;
+  fs.appendFileSync(logFilename, formatMessage(message, type), { flags: "a" });
 }

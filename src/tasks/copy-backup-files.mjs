@@ -1,16 +1,12 @@
 import * as logFile from "../utils/log-file.mjs";
 import * as file from "../utils/file.mjs";
 
-export async function copyBackupFiles(
-  pathSource,
-  pathDestination,
-  expirationInDays
-) {
+export function copyBackupFiles(pathSource, pathDestination, expirationInDays) {
   logFile.writeMessage("Backup.", logFile.TYPE_MESSAGE_SYST);
 
   if (!(file.fileExists(pathSource) && file.fileExists(pathDestination))) {
-    await logFile.writeMessage("Incorrect path.", logFile.TYPE_MESSAGE_ERROR);
-    await logFile.writeMessage("Backup finish.", logFile.TYPE_MESSAGE_SYST);
+    logFile.writeMessage("Incorrect path.", logFile.TYPE_MESSAGE_ERROR);
+    logFile.writeMessage("Backup finish.", logFile.TYPE_MESSAGE_SYST);
     return;
   }
 
@@ -36,18 +32,9 @@ export async function copyBackupFiles(
     for (let fileName of filterFilesList) {
       const srcFullName = file.getFullPath(pathSource, fileName);
       const dstFullName = file.getFullPath(pathDestination, fileName);
-      await file
-        .copyFiles(srcFullName, dstFullName)
-        .then((res) => {
-          logFile.writeMessage(
-            `File ${res} copied.`,
-            logFile.TYPE_MESSAGE_INFO
-          );
-          return;
-        })
-        .catch((error) =>
-          logFile.writeMessage(error.message, logFile.TYPE_MESSAGE_ERROR)
-        );
+      // TODO check error
+      file.copyFile(srcFullName, dstFullName);
+      logFile.writeMessage(`  ${fileName} copied.`, logFile.TYPE_MESSAGE_INFO);
     }
   } else logFile.writeMessage("No files to copy.", logFile.TYPE_MESSAGE_INFO);
 

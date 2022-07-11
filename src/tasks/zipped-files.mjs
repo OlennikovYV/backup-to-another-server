@@ -1,7 +1,7 @@
 import * as logFile from "../utils/log-file.mjs";
 import * as file from "../utils/file.mjs";
 
-export async function zippedFiles(pathDestination, expirationInDays) {
+export function zippedFiles(pathDestination, expirationInDays) {
   logFile.writeMessage("Zipped.", logFile.TYPE_MESSAGE_SYST);
 
   if (!file.fileExists(pathDestination)) {
@@ -31,16 +31,11 @@ export async function zippedFiles(pathDestination, expirationInDays) {
       const srcFullName = file.getFullPath(pathDestination, fileName);
       const dstFullName = file.getFullPath(pathDestination, nameArchiv);
 
-      await file
-        .zipFile(srcFullName, dstFullName)
-        .then((res) => {
-          logFile.writeMessage(
-            `Zipped file ${res}.`,
-            logFile.TYPE_MESSAGE_INFO
-          );
-          return;
-        })
-        .catch((err) => logFile.writeMessage(err, logFile.TYPE_MESSAGE_ERROR));
+      // TODO check error
+      file.zipFile(srcFullName, dstFullName);
+      logFile.writeMessage(`  ${fileName} zipped.`, logFile.TYPE_MESSAGE_INFO);
+      file.deleteFile(srcFullName);
+      logFile.writeMessage(`  ${fileName} deleted.`, logFile.TYPE_MESSAGE_INFO);
     }
   } else {
     logFile.writeMessage("No files to zipped.", logFile.TYPE_MESSAGE_INFO);

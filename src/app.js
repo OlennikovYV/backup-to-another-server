@@ -7,9 +7,9 @@ const pathDestination =
   "D:\\project\\backup-to-another-server\\test-destination";
 const expirationInDays = 100;
 
-(async function runTasks() {
+(function runTasks() {
   // TODO Revise the method of starting tasks
-  await copyBackupFiles(pathSource, pathDestination, expirationInDays);
-  await zippedFiles(pathDestination, expirationInDays);
+  copyBackupFiles(pathSource, pathDestination, expirationInDays);
+  zippedFiles(pathDestination, expirationInDays);
   deleteExpiredFiles(pathSource, expirationInDays);
 })();

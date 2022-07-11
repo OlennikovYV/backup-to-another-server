@@ -2,8 +2,6 @@ import fs from "fs";
 import path from "path";
 import zlib from "zlib";
 
-import * as mLog from "./log-file.mjs";
-
 export function getFullPath(dir, fileName) {
   return path.join(dir, fileName);
 }
@@ -29,6 +27,10 @@ export function changeExtension(
   return fileName.replace(regexp, replaceableExtension);
 }
 
+export function deleteFile(fileName) {
+  fs.unlinkSync(fileName);
+}
+
 export function getFileCreationDate(fileName) {
   let fileInformation;
   if (fileExists(fileName))
@@ -38,39 +40,23 @@ export function getFileCreationDate(fileName) {
   return fileInformation ? fileInformation.ctime : 0;
 }
 
-export function copyFiles(srcFile, dstFile) {
-  return new Promise((resolve, reject) => {
-    const readStream = fs.createReadStream(srcFile);
-    readStream.on("error", (err) => reject(err));
-    const writeStream = fs.createWriteStream(dstFile);
-    writeStream.on("error", (err) => reject(err));
-    writeStream.on("close", () => resolve(dstFile));
-    readStream.pipe(writeStream);
-  });
+function readFileToBuffer(fileName) {
+  const fileDescriptor = fs.openSync(fileName);
+  const buffer = fs.readFileSync(fileDescriptor);
+  fs.closeSync(fileDescriptor);
+  return buffer;
 }
 
-export function deleteFile(fileName) {
-  if (fileExists(fileName))
-    fs.unlink(fileName, (err) => {
-      if (err) throw err;
-      mLog.writeMessage(`${fileName} was deleted.`, mLog.TYPE_MESSAGE_INFO);
-    });
+function writeFileFromBuffer(fileName, buffer) {
+  fs.writeFileSync(fileName, buffer);
 }
 
 export function zipFile(srcFile, archiv) {
-  return new Promise((resolve, reject) => {
-    let gzip = zlib.createGzip();
-    let readableStream = fs.createReadStream(srcFile, "utf8");
-    let writeableStream = fs.createWriteStream(archiv);
+  let buffer = readFileToBuffer(srcFile);
+  buffer = zlib.gzipSync(buffer);
+  writeFileFromBuffer(archiv, buffer);
+}
 
-    readableStream.on("error", (err) => reject(err));
-    writeableStream.on("error", (err) => reject(err));
-
-    readableStream.on("close", () => {
-      deleteFile(srcFile);
-      resolve(srcFile);
-    });
-
-    readableStream.pipe(gzip).pipe(writeableStream);
-  });
+export function copyFile(srcFile, dstFile) {
+  writeFileFromBuffer(dstFile, readFileToBuffer(srcFile));
 }
