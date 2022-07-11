@@ -41,7 +41,7 @@ export function deleteExpiredFiles(pathSource, expirationInDays) {
         }
       }
     });
-  } else logFile.writeMessage("No expired files.", logFile.TYPE_MESSAGE_INFO);
+  } else logFile.writeMessage("  No expired files.", logFile.TYPE_MESSAGE_INFO);
 
   logFile.writeMessage("Garbage finish.", logFile.TYPE_MESSAGE_SYST);
 }

@@ -58,7 +58,7 @@ export function zippedFiles(pathDestination, expirationInDays) {
       }
     }
   } else {
-    logFile.writeMessage("No files to zipped.", logFile.TYPE_MESSAGE_INFO);
+    logFile.writeMessage("  No files to zipped.", logFile.TYPE_MESSAGE_INFO);
   }
 
   logFile.writeMessage("Zipped finish.", logFile.TYPE_MESSAGE_SYST);

@@ -46,7 +46,7 @@ export function copyBackupFiles(pathSource, pathDestination, expirationInDays) {
 
       logFile.writeMessage(`  ${fileName} copied.`, logFile.TYPE_MESSAGE_INFO);
     }
-  } else logFile.writeMessage("No files to copy.", logFile.TYPE_MESSAGE_INFO);
+  } else logFile.writeMessage("  No files to copy.", logFile.TYPE_MESSAGE_INFO);
 
   logFile.writeMessage("Backup finish.", logFile.TYPE_MESSAGE_SYST);
 
