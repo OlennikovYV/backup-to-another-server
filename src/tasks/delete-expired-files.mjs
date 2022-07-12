@@ -6,6 +6,7 @@ export function deleteExpiredFiles(pathSource, expirationInDays) {
 
   if (!file.fileExists(pathSource)) {
     logFile.writeMessage("Incorrect path.", logFile.TYPE_MESSAGE_ERROR);
+    logFile.writeMessage("Garbage finish.", logFile.TYPE_MESSAGE_SYST);
     return;
   }
 

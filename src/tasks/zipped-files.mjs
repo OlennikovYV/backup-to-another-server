@@ -6,6 +6,7 @@ export function zippedFiles(pathDestination, expirationInDays) {
 
   if (!file.fileExists(pathDestination)) {
     logFile.writeMessage("Incorrect path.", logFile.TYPE_MESSAGE_ERROR);
+    logFile.writeMessage("Zipped finish.", logFile.TYPE_MESSAGE_SYST);
     return;
   }
 
@@ -62,6 +63,4 @@ export function zippedFiles(pathDestination, expirationInDays) {
   }
 
   logFile.writeMessage("Zipped finish.", logFile.TYPE_MESSAGE_SYST);
-
-  return;
 }

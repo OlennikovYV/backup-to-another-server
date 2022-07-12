@@ -12,22 +12,23 @@ export function copyBackupFiles(pathSource, pathDestination, expirationInDays) {
 
   const srcFileList = file.getFilesListFromPath(pathSource);
 
-  const filterFilesList = srcFileList.filter((el) => {
-    const srcFullName = file.getFullPath(pathSource, el);
-    const fileTime = file.getFileCreationDate(srcFullName);
-    const nameArchiv = file.changeExtension(el, ".bak", ".gz");
+  // TODO Put into separate functions
+  const filterFilesList = srcFileList.filter((fileName) => {
+    let fileTime, nameArchiv, diffDate;
 
+    fileTime = file.getFileCreationDate(file.getFullPath(pathSource, fileName));
     if (!fileTime) return false;
 
-    const age = new Date() - new Date(fileTime);
+    diffDate = new Date(new Date() - new Date(fileTime)).getDate();
+    if (diffDate > expirationInDays) return false;
 
-    // TODO add to '.gz' in filter
-    return (
-      new Date(age).getDate() <= expirationInDays &&
-      file.getFileExtension(el) === ".bak" &&
-      !file.fileExists(file.getFullPath(pathDestination, el)) &&
-      !file.fileExists(file.getFullPath(pathDestination, nameArchiv))
-    );
+    if (file.getFileExtension(fileName) !== ".bak") return false;
+
+    nameArchiv = file.changeExtension(fileName, ".bak", ".gz");
+    if (file.fileExists(file.getFullPath(pathDestination, nameArchiv)))
+      return false;
+
+    return true;
   });
 
   if (filterFilesList.length > 0) {
@@ -49,6 +50,4 @@ export function copyBackupFiles(pathSource, pathDestination, expirationInDays) {
   } else logFile.writeMessage("  No files to copy.", logFile.TYPE_MESSAGE_INFO);
 
   logFile.writeMessage("Backup finish.", logFile.TYPE_MESSAGE_SYST);
-
-  return;
 }
