@@ -35,13 +35,33 @@ export function deleteFile(fileName) {
   }
 }
 
-export function getFileCreationDate(fileName) {
+export function getFileCreationTime(fileName) {
   let fileInformation;
   if (fileExists(fileName))
     fileInformation = fs.statSync(fileName, (err) => {
       if (err) throw err;
     });
   return fileInformation ? fileInformation.ctime : 0;
+}
+
+export function isFileTimeExpired(fileName, expirationInDays) {
+  const nowDate = new Date();
+  const fileTime = getFileCreationTime(fileName);
+
+  if (!fileTime) return false;
+  const diffDate = nowDate - new Date(fileTime);
+  if (new Date(diffDate).getDate() > expirationInDays) return false;
+  return true;
+}
+
+export function isFileExtension(fileName, extension) {
+  return getFileExtension(fileName) === extension;
+}
+
+export function isExistsArchive(pathDestination, fileName, extensionArchive) {
+  const extension = getFileExtension(fileName);
+  const nameArchiv = changeExtension(fileName, extension, extensionArchive);
+  return fileExists(getFullPath(pathDestination, nameArchiv));
 }
 
 function readFileToBuffer(fileName) {

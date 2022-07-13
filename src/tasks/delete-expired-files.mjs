@@ -14,7 +14,7 @@ export function deleteExpiredFiles(pathSource, expirationInDays) {
 
   const filterFilesList = sourceFileList.filter((el) => {
     const fullName = file.getFullPath(pathSource, el);
-    const fileTime = file.getFileCreationDate(fullName);
+    const fileTime = file.getFileCreationTime(fullName);
 
     if (!fileTime) return false;
 

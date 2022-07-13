@@ -14,21 +14,14 @@ export function copyBackupFiles(pathSource, pathDestination, expirationInDays) {
 
   // TODO Put into separate functions
   const filterFilesList = srcFileList.filter((fileName) => {
-    let fileTime, nameArchiv, diffDate;
-
-    fileTime = file.getFileCreationDate(file.getFullPath(pathSource, fileName));
-    if (!fileTime) return false;
-
-    diffDate = new Date(new Date() - new Date(fileTime)).getDate();
-    if (diffDate > expirationInDays) return false;
-
-    if (file.getFileExtension(fileName) !== ".bak") return false;
-
-    nameArchiv = file.changeExtension(fileName, ".bak", ".gz");
-    if (file.fileExists(file.getFullPath(pathDestination, nameArchiv)))
-      return false;
-
-    return true;
+    return (
+      file.isFileTimeExpired(
+        file.getFullPath(pathSource, fileName),
+        expirationInDays
+      ) &&
+      file.isFileExtension(fileName, ".bak") &&
+      !file.isExistsArchive(pathDestination, fileName, ".gz")
+    );
   });
 
   if (filterFilesList.length > 0) {

@@ -14,7 +14,7 @@ export function zippedFiles(pathDestination, expirationInDays) {
 
   const filterFilesList = srcFileList.filter((fileName) => {
     const fullName = file.getFullPath(pathDestination, fileName);
-    const fileTime = file.getFileCreationDate(fullName);
+    const fileTime = file.getFileCreationTime(fullName);
 
     if (!fileTime) return false;
 
