@@ -13,16 +13,11 @@ export function zippedFiles(pathDestination, expirationInDays) {
   const srcFileList = file.getFilesListFromPath(pathDestination);
 
   const filterFilesList = srcFileList.filter((fileName) => {
-    const fullName = file.getFullPath(pathDestination, fileName);
-    const fileTime = file.getFileCreationTime(fullName);
-
-    if (!fileTime) return false;
-
-    const age = new Date() - new Date(fileTime);
-
     return (
-      new Date(age).getDate() <= expirationInDays &&
-      file.getFileExtension(fullName) === ".bak"
+      file.isFileTimeNotExpired(
+        file.getFullPath(pathDestination, fileName),
+        expirationInDays
+      ) && file.isFileExtension(fileName, ".bak")
     );
   });
 

@@ -44,7 +44,7 @@ export function getFileCreationTime(fileName) {
   return fileInformation ? fileInformation.ctime : 0;
 }
 
-export function isFileTimeExpired(fileName, expirationInDays) {
+export function isFileTimeNotExpired(fileName, expirationInDays) {
   const nowDate = new Date();
   const fileTime = getFileCreationTime(fileName);
 

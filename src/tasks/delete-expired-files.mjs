@@ -12,23 +12,21 @@ export function deleteExpiredFiles(pathSource, expirationInDays) {
 
   const sourceFileList = file.getFilesListFromPath(pathSource);
 
-  const filterFilesList = sourceFileList.filter((el) => {
-    const fullName = file.getFullPath(pathSource, el);
-    const fileTime = file.getFileCreationTime(fullName);
-
-    if (!fileTime) return false;
-
-    const ageFile = new Date() - new Date(fileTime);
+  const filterFilesList = sourceFileList.filter((fileName) => {
     return (
-      new Date(ageFile).getDate() > expirationInDays &&
-      (file.getFileExtension(fullName) === ".bak" ||
-        file.getFileExtension(fullName) === ".gz")
+      !file.isFileTimeNotExpired(
+        file.getFullPath(pathSource, fileName),
+        expirationInDays
+      ) &&
+      (file.isFileExtension(fileName, ".bak") ||
+        file.isFileExtension(fileName, ".gz"))
     );
   });
 
   if (filterFilesList.length > 0) {
     filterFilesList.forEach((fileName) => {
       const fullName = file.getFullPath(pathSource, fileName);
+
       if (file.fileExists(fullName)) {
         try {
           file.deleteFile(fullName);
@@ -42,7 +40,8 @@ export function deleteExpiredFiles(pathSource, expirationInDays) {
         }
       }
     });
-  } else logFile.writeMessage("  No expired files.", logFile.TYPE_MESSAGE_INFO);
+  } else
+    logFile.writeMessage("  No files to delete.", logFile.TYPE_MESSAGE_INFO);
 
   logFile.writeMessage("Garbage finish.", logFile.TYPE_MESSAGE_SYST);
 }

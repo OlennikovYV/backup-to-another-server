@@ -10,5 +10,5 @@ import { deleteExpiredFiles } from "./tasks/delete-expired-files.mjs";
 
   copyBackupFiles(pathSource, pathDestination, expirationInDays);
   zippedFiles(pathDestination, expirationInDays);
-  deleteExpiredFiles(pathSource, expirationInDays);
+  deleteExpiredFiles(pathDestination, expirationInDays);
 })();

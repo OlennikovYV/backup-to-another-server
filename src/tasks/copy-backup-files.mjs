@@ -12,10 +12,9 @@ export function copyBackupFiles(pathSource, pathDestination, expirationInDays) {
 
   const srcFileList = file.getFilesListFromPath(pathSource);
 
-  // TODO Put into separate functions
   const filterFilesList = srcFileList.filter((fileName) => {
     return (
-      file.isFileTimeExpired(
+      file.isFileTimeNotExpired(
         file.getFullPath(pathSource, fileName),
         expirationInDays
       ) &&
