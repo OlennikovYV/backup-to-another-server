@@ -1,4 +1,5 @@
 import fs from "fs";
+import * as constants from "./constants.mjs";
 
 export const TYPE_MESSAGE_SYST = "Task";
 export const TYPE_MESSAGE_INFO = "Info";
@@ -15,7 +16,7 @@ function getDateTimeNow(splitDate = "-", splitTime = ":") {
 
   let year = String(nowDate.getFullYear());
 
-  let month = String(nowDate.getMonth());
+  let month = String(nowDate.getMonth() + 1);
   let day = String(nowDate.getDate());
   let hours = String(nowDate.getHours());
   let minutes = String(nowDate.getMinutes());
@@ -52,6 +53,6 @@ function formatMessage(message, type) {
 
 export function writeMessage(message, type) {
   const dateLogFile = getDateTimeNow("_").date;
-  const logFilename = `.\\test-destination\\run-tasks-${dateLogFile}.log.txt`;
+  const logFilename = `${constants.pathLogFilename}\\run-tasks-${dateLogFile}.log.txt`;
   fs.appendFileSync(logFilename, formatMessage(message, type), { flags: "a" });
 }

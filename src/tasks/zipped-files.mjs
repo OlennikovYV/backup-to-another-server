@@ -1,5 +1,6 @@
 import * as logFile from "../utils/log-file.mjs";
 import * as file from "../utils/file.mjs";
+import * as constants from "../utils/constants.mjs";
 
 export function zippedFiles(pathDestination, expirationInDays) {
   logFile.writeMessage("Zipped.", logFile.TYPE_MESSAGE_SYST);
@@ -17,29 +18,28 @@ export function zippedFiles(pathDestination, expirationInDays) {
       file.isFileTimeNotExpired(
         file.getFullPath(pathDestination, fileName),
         expirationInDays
-      ) && file.isFileExtension(fileName, ".bak")
+      ) && file.isFileExtension(fileName, constants.extentionBackup)
     );
   });
 
   if (filterFilesList.length > 0) {
     for (let fileName of filterFilesList) {
-      const nameArchiv = file.changeExtension(fileName, ".bak", ".gz");
+      const nameArchiv = file.changeExtension(
+        fileName,
+        constants.extentionBackup,
+        constants.extentionArchiv
+      );
       const srcFullName = file.getFullPath(pathDestination, fileName);
       const dstFullName = file.getFullPath(pathDestination, nameArchiv);
 
       try {
-        file.zipFile(srcFullName, dstFullName);
+        file.zipFileAdm(srcFullName, dstFullName);
         logFile.writeMessage(
           `  ${nameArchiv} zipped.`,
           logFile.TYPE_MESSAGE_INFO
         );
       } catch (err) {
-        if (err.type === "read")
-          logFile.writeMessage(`Unable to read file ${err.file}.`);
-        if (err.type === "write")
-          logFile.writeMessage(`Unable to write file ${err.file}.`);
-        if (err.type === "gzip")
-          logFile.writeMessage(`Unable to zip file ${err.file}.`);
+        logFile.writeMessage(`Unable to ${err.type} file ${err.file}.`);
       }
 
       try {
@@ -49,8 +49,7 @@ export function zippedFiles(pathDestination, expirationInDays) {
           logFile.TYPE_MESSAGE_INFO
         );
       } catch (err) {
-        if (err.type === "delete")
-          logFile.writeMessage(`Unable to delete file ${err.file}.`);
+        logFile.writeMessage(`Unable to ${err.type} file ${err.file}.`);
       }
     }
   } else {

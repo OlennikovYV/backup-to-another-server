@@ -1,5 +1,6 @@
 import * as logFile from "../utils/log-file.mjs";
 import * as file from "../utils/file.mjs";
+import * as constants from "../utils/constants.mjs";
 
 export function deleteExpiredFiles(pathSource, expirationInDays) {
   logFile.writeMessage("Garbage.", logFile.TYPE_MESSAGE_SYST);
@@ -18,8 +19,8 @@ export function deleteExpiredFiles(pathSource, expirationInDays) {
         file.getFullPath(pathSource, fileName),
         expirationInDays
       ) &&
-      (file.isFileExtension(fileName, ".bak") ||
-        file.isFileExtension(fileName, ".gz"))
+      (file.isFileExtension(fileName, constants.extentionBackup) ||
+        file.isFileExtension(fileName, constants.extentionArchiv))
     );
   });
 
@@ -35,8 +36,7 @@ export function deleteExpiredFiles(pathSource, expirationInDays) {
             logFile.TYPE_MESSAGE_INFO
           );
         } catch (err) {
-          if (err.type === "delete")
-            logFile.writeMessage(`Unable to delete file ${err.file}.`);
+          logFile.writeMessage(`Unable to ${err.type} file ${err.file}.`);
         }
       }
     });

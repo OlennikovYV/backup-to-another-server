@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import zlib from "zlib";
+import AdmZip from "adm-zip";
 
 export function getFullPath(dir, fileName) {
   return path.join(dir, fileName);
@@ -90,7 +91,18 @@ export function zipFile(srcFile, archiv) {
     writeFileFromBuffer(archiv, buffer);
   } catch (err) {
     if (err.type) throw err;
-    throw { type: "gzip", file: srcFile };
+    throw { type: "archive", file: srcFile };
+  }
+}
+
+export function zipFileAdm(srcFile, archiv) {
+  try {
+    let zip = new AdmZip();
+    zip.addLocalFile(srcFile);
+    zip.writeZip(archiv);
+  } catch (err) {
+    if (err.type) throw err;
+    throw { type: "archive", file: srcFile };
   }
 }
 

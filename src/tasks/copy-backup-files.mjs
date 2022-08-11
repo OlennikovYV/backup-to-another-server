@@ -1,5 +1,6 @@
 import * as logFile from "../utils/log-file.mjs";
 import * as file from "../utils/file.mjs";
+import * as constants from "../utils/constants.mjs";
 
 export function copyBackupFiles(pathSource, pathDestination, expirationInDays) {
   logFile.writeMessage("Backup.", logFile.TYPE_MESSAGE_SYST);
@@ -18,8 +19,12 @@ export function copyBackupFiles(pathSource, pathDestination, expirationInDays) {
         file.getFullPath(pathSource, fileName),
         expirationInDays
       ) &&
-      file.isFileExtension(fileName, ".bak") &&
-      !file.isExistsArchive(pathDestination, fileName, ".gz")
+      file.isFileExtension(fileName, constants.extentionBackup) &&
+      !file.isExistsArchive(
+        pathDestination,
+        fileName,
+        constants.extentionArchiv
+      )
     );
   });
 
@@ -31,10 +36,7 @@ export function copyBackupFiles(pathSource, pathDestination, expirationInDays) {
       try {
         file.copyFile(srcFullName, dstFullName);
       } catch (err) {
-        if (err.type === "read")
-          logFile.writeMessage(`Unable to read file ${err.file}.`);
-        if (err.type === "write")
-          logFile.writeMessage(`Unable to write file ${err.file}.`);
+        logFile.writeMessage(`Unable to ${err.type} file ${err.file}.`);
       }
 
       logFile.writeMessage(`  ${fileName} copied.`, logFile.TYPE_MESSAGE_INFO);
