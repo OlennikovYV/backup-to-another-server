@@ -9,19 +9,17 @@ function prependZero(number) {
   return number < 10 ? "0" + number : number;
 }
 
-function getDateTimeNow(splitDate = "-", splitTime = ":") {
+function getDateTimeNow(dateTime, splitDate = "-", splitTime = ":") {
   let date, time;
 
-  const nowDate = new Date();
+  let year = String(dateTime.getFullYear());
 
-  let year = String(nowDate.getFullYear());
-
-  let month = String(nowDate.getMonth() + 1);
-  let day = String(nowDate.getDate());
-  let hours = String(nowDate.getHours());
-  let minutes = String(nowDate.getMinutes());
-  let seconds = String(nowDate.getSeconds());
-  let milliseconds = String(nowDate.getMilliseconds());
+  let month = String(dateTime.getMonth() + 1);
+  let day = String(dateTime.getDate());
+  let hours = String(dateTime.getHours());
+  let minutes = String(dateTime.getMinutes());
+  let seconds = String(dateTime.getSeconds());
+  let milliseconds = String(dateTime.getMilliseconds());
 
   month = prependZero(month);
   day = prependZero(day);
@@ -47,12 +45,12 @@ function getDateTimeNow(splitDate = "-", splitTime = ":") {
 }
 
 function formatMessage(message, type) {
-  const { date, time } = getDateTimeNow();
+  const { date, time } = getDateTimeNow(new Date());
   return `${date} ${time} - [${type}]: ${message}\n`;
 }
 
 export function writeMessage(message, type) {
-  const dateLogFile = getDateTimeNow("_").date;
+  const dateLogFile = getDateTimeNow(new Date(), "_").date;
   const logFilename = `${constants.pathLogFilename}\\run-tasks-${dateLogFile}.log.txt`;
   fs.appendFileSync(logFilename, formatMessage(message, type), { flags: "a" });
 }
