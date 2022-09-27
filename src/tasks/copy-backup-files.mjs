@@ -36,7 +36,10 @@ export function copyBackupFiles(pathSource, pathDestination, expirationInDays) {
       try {
         file.copyFile(srcFullName, dstFullName);
       } catch (err) {
-        logFile.writeMessage(`Unable to ${err.type} file ${err.file}.`);
+        logFile.writeMessage(
+          `Unable to ${err.type} file ${err.file}.`,
+          logFile.TYPE_MESSAGE_ERROR
+        );
       }
 
       logFile.writeMessage(`  ${fileName} copied.`, logFile.TYPE_MESSAGE_INFO);

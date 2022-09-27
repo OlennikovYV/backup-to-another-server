@@ -39,7 +39,10 @@ export function zippedFiles(pathDestination, expirationInDays) {
           logFile.TYPE_MESSAGE_INFO
         );
       } catch (err) {
-        logFile.writeMessage(`Unable to ${err.type} file ${err.file}.`);
+        logFile.writeMessage(
+          `Unable to ${err.type} file ${err.file}.`,
+          logFile.TYPE_MESSAGE_ERROR
+        );
       }
 
       try {
@@ -49,7 +52,10 @@ export function zippedFiles(pathDestination, expirationInDays) {
           logFile.TYPE_MESSAGE_INFO
         );
       } catch (err) {
-        logFile.writeMessage(`Unable to ${err.type} file ${err.file}.`);
+        logFile.writeMessage(
+          `Unable to ${err.type} file ${err.file}.`,
+          logFile.TYPE_MESSAGE_ERROR
+        );
       }
     }
   } else {
