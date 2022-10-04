@@ -5,7 +5,7 @@ import * as constants from "../utils/constants.mjs";
 export function deleteExpiredFiles(pathSource, expirationInDays) {
   logFile.writeMessage("Garbage.", logFile.TYPE_MESSAGE_SYST);
 
-  if (!file.fileExists(pathSource)) {
+  if (!file.pathExists(pathSource)) {
     logFile.writeMessage("Incorrect path.", logFile.TYPE_MESSAGE_ERROR);
     logFile.writeMessage("Garbage finish.", logFile.TYPE_MESSAGE_SYST);
     return;
@@ -28,7 +28,7 @@ export function deleteExpiredFiles(pathSource, expirationInDays) {
     filterFilesList.forEach((fileName) => {
       const fullName = file.getFullPath(pathSource, fileName);
 
-      if (file.fileExists(fullName)) {
+      if (file.pathExists(fullName)) {
         try {
           file.deleteFile(fullName);
           logFile.writeMessage(
@@ -44,7 +44,7 @@ export function deleteExpiredFiles(pathSource, expirationInDays) {
       }
     });
   } else
-    logFile.writeMessage("  No files to delete.", logFile.TYPE_MESSAGE_INFO);
+    logFile.writeMessage("  No files to garbage.", logFile.TYPE_MESSAGE_INFO);
 
   logFile.writeMessage("Garbage finish.", logFile.TYPE_MESSAGE_SYST);
 }

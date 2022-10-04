@@ -4,11 +4,10 @@ import { deleteExpiredFiles } from "./tasks/delete-expired-files.mjs";
 import * as constants from "./utils/constants.mjs";
 
 (function runTasks() {
-  const pathSource = constants.pathSource;
   const pathDestination = constants.pathDestination;
   const expirationInDays = constants.expirationInDays;
 
-  copyBackupFiles(pathSource, pathDestination, expirationInDays);
+  copyBackupFiles();
   zippedFiles(pathDestination, expirationInDays);
   deleteExpiredFiles(pathDestination, expirationInDays);
 })();

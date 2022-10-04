@@ -5,7 +5,7 @@ import * as constants from "../utils/constants.mjs";
 export function zippedFiles(pathDestination, expirationInDays) {
   logFile.writeMessage("Zipped.", logFile.TYPE_MESSAGE_SYST);
 
-  if (!file.fileExists(pathDestination)) {
+  if (!file.pathExists(pathDestination)) {
     logFile.writeMessage("Incorrect path.", logFile.TYPE_MESSAGE_ERROR);
     logFile.writeMessage("Zipped finish.", logFile.TYPE_MESSAGE_SYST);
     return;

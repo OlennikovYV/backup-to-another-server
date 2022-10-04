@@ -1,50 +1,70 @@
-import * as logFile from "../utils/log-file.mjs";
-import * as file from "../utils/file.mjs";
-import * as constants from "../utils/constants.mjs";
+import {
+  TYPE_MESSAGE_ERROR,
+  TYPE_MESSAGE_SYST,
+  TYPE_MESSAGE_INFO,
+  writeMessage,
+} from "../utils/log-file.mjs";
+import {
+  getFullPath,
+  pathExists,
+  getFilesListFromPath,
+  copyFile,
+} from "../utils/file.mjs";
+import {
+  isFileTimeNotExpired,
+  isFileExtension,
+  isExistsArchive,
+  filterFilesList,
+} from "../utils/filters.mjs";
+import {
+  extentionBackup,
+  extentionArchiv,
+  pathSource,
+  pathDestination,
+  expirationInDays,
+} from "../utils/constants.mjs";
 
-export function copyBackupFiles(pathSource, pathDestination, expirationInDays) {
-  logFile.writeMessage("Backup.", logFile.TYPE_MESSAGE_SYST);
+function verifyСonditions(fileName) {
+  return (
+    isFileTimeNotExpired(getFullPath(pathSource, fileName), expirationInDays) &&
+    isFileExtension(fileName, extentionBackup) &&
+    !isExistsArchive(pathDestination, fileName, extentionArchiv)
+  );
+}
 
-  if (!(file.fileExists(pathSource) && file.fileExists(pathDestination))) {
-    logFile.writeMessage("Incorrect path.", logFile.TYPE_MESSAGE_ERROR);
-    logFile.writeMessage("Backup finish.", logFile.TYPE_MESSAGE_SYST);
+function copyingFilesList(filesList) {
+  for (let fileName of filesList) {
+    const srcFullName = getFullPath(pathSource, fileName);
+    const dstFullName = getFullPath(pathDestination, fileName);
+
+    try {
+      copyFile(srcFullName, dstFullName);
+    } catch (err) {
+      writeMessage(
+        `Unable to ${err.type} file ${err.file}.`,
+        TYPE_MESSAGE_ERROR
+      );
+    }
+
+    writeMessage(`  ${fileName} copied.`, TYPE_MESSAGE_INFO);
+  }
+}
+
+export function copyBackupFiles() {
+  writeMessage("Backup.", TYPE_MESSAGE_SYST);
+
+  if (!(pathExists(pathSource) && pathExists(pathDestination))) {
+    writeMessage("Incorrect path.", TYPE_MESSAGE_ERROR);
+    writeMessage("Backup finish.", TYPE_MESSAGE_SYST);
     return;
   }
 
-  const srcFileList = file.getFilesListFromPath(pathSource);
+  const srcFileList = getFilesListFromPath(pathSource);
+  const filesList = filterFilesList(srcFileList, verifyСonditions);
 
-  const filterFilesList = srcFileList.filter((fileName) => {
-    return (
-      file.isFileTimeNotExpired(
-        file.getFullPath(pathSource, fileName),
-        expirationInDays
-      ) &&
-      file.isFileExtension(fileName, constants.extentionBackup) &&
-      !file.isExistsArchive(
-        pathDestination,
-        fileName,
-        constants.extentionArchiv
-      )
-    );
-  });
+  if (filesList.length > 0) {
+    copyingFilesList(filesList);
+  } else writeMessage("  No files to copy.", TYPE_MESSAGE_INFO);
 
-  if (filterFilesList.length > 0) {
-    for (let fileName of filterFilesList) {
-      const srcFullName = file.getFullPath(pathSource, fileName);
-      const dstFullName = file.getFullPath(pathDestination, fileName);
-
-      try {
-        file.copyFile(srcFullName, dstFullName);
-      } catch (err) {
-        logFile.writeMessage(
-          `Unable to ${err.type} file ${err.file}.`,
-          logFile.TYPE_MESSAGE_ERROR
-        );
-      }
-
-      logFile.writeMessage(`  ${fileName} copied.`, logFile.TYPE_MESSAGE_INFO);
-    }
-  } else logFile.writeMessage("  No files to copy.", logFile.TYPE_MESSAGE_INFO);
-
-  logFile.writeMessage("Backup finish.", logFile.TYPE_MESSAGE_SYST);
+  writeMessage("Backup finish.", TYPE_MESSAGE_SYST);
 }

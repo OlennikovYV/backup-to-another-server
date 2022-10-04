@@ -15,7 +15,7 @@ export function getFilesListFromPath(path) {
   return fs.readdirSync(path);
 }
 
-export function fileExists(fileName) {
+export function pathExists(fileName) {
   return fs.existsSync(fileName);
 }
 
@@ -38,13 +38,14 @@ export function deleteFile(fileName) {
 
 export function getFileCreationTime(fileName) {
   let fileInformation;
-  if (fileExists(fileName))
+  if (pathExists(fileName))
     fileInformation = fs.statSync(fileName, (err) => {
       if (err) throw err;
     });
   return fileInformation ? fileInformation.ctime : 0;
 }
 
+// TODO Delete after completed module filters
 export function isFileTimeNotExpired(fileName, expirationInDays) {
   const nowDate = new Date();
   const fileTime = getFileCreationTime(fileName);
@@ -62,8 +63,9 @@ export function isFileExtension(fileName, extension) {
 export function isExistsArchive(pathDestination, fileName, extensionArchive) {
   const extension = getFileExtension(fileName);
   const nameArchiv = changeExtension(fileName, extension, extensionArchive);
-  return fileExists(getFullPath(pathDestination, nameArchiv));
+  return pathExists(getFullPath(pathDestination, nameArchiv));
 }
+// TODO
 
 function readFileToBuffer(fileName) {
   try {
