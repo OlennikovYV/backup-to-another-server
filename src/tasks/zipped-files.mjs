@@ -1,66 +1,87 @@
-import * as logFile from "../utils/log-file.mjs";
-import * as file from "../utils/file.mjs";
-import * as constants from "../utils/constants.mjs";
+import {
+  TYPE_MESSAGE_SYST,
+  TYPE_MESSAGE_ERROR,
+  TYPE_MESSAGE_INFO,
+  writeMessage,
+} from "../utils/log-file.mjs";
+import {
+  pathExists,
+  getFilesListFromPath,
+  getFullPath,
+  changeExtension,
+  zipFileAdm,
+  deleteFile,
+} from "../utils/file.mjs";
+import {
+  isFileTimeNotExpired,
+  isFileExtension,
+  filterFilesList,
+} from "../utils/filters.mjs";
+import {
+  pathDestination,
+  expirationInDays,
+  extentionBackup,
+  extentionArchiv,
+} from "../utils/constants.mjs";
 
-export function zippedFiles(pathDestination, expirationInDays) {
-  logFile.writeMessage("Zipped.", logFile.TYPE_MESSAGE_SYST);
+function verifyСonditions(fileName) {
+  return (
+    isFileTimeNotExpired(
+      getFullPath(pathDestination, fileName),
+      expirationInDays
+    ) && isFileExtension(fileName, extentionBackup)
+  );
+}
 
-  if (!file.pathExists(pathDestination)) {
-    logFile.writeMessage("Incorrect path.", logFile.TYPE_MESSAGE_ERROR);
-    logFile.writeMessage("Zipped finish.", logFile.TYPE_MESSAGE_SYST);
+function zippedAndDeletingBackup(filesList) {
+  for (let fileName of filesList) {
+    const nameArchiv = changeExtension(
+      fileName,
+      extentionBackup,
+      extentionArchiv
+    );
+    const srcFullName = getFullPath(pathDestination, fileName);
+    const dstFullName = getFullPath(pathDestination, nameArchiv);
+
+    try {
+      zipFileAdm(srcFullName, dstFullName);
+      writeMessage(`  ${nameArchiv} zipped.`, TYPE_MESSAGE_INFO);
+    } catch (err) {
+      writeMessage(
+        `Unable to ${err.type} file ${err.file}.`,
+        TYPE_MESSAGE_ERROR
+      );
+    }
+
+    try {
+      deleteFile(srcFullName);
+      writeMessage(`  ${fileName} deleted.`, TYPE_MESSAGE_INFO);
+    } catch (err) {
+      writeMessage(
+        `Unable to ${err.type} file ${err.file}.`,
+        TYPE_MESSAGE_ERROR
+      );
+    }
+  }
+}
+
+export function zippedBackupFiles() {
+  writeMessage("Zipped.", TYPE_MESSAGE_SYST);
+
+  if (!pathExists(pathDestination)) {
+    writeMessage("Incorrect path.", TYPE_MESSAGE_ERROR);
+    writeMessage("Zipped finish.", TYPE_MESSAGE_SYST);
     return;
   }
 
-  const srcFileList = file.getFilesListFromPath(pathDestination);
+  const srcFileList = getFilesListFromPath(pathDestination);
+  const filesList = filterFilesList(srcFileList, verifyСonditions);
 
-  const filterFilesList = srcFileList.filter((fileName) => {
-    return (
-      file.isFileTimeNotExpired(
-        file.getFullPath(pathDestination, fileName),
-        expirationInDays
-      ) && file.isFileExtension(fileName, constants.extentionBackup)
-    );
-  });
-
-  if (filterFilesList.length > 0) {
-    for (let fileName of filterFilesList) {
-      const nameArchiv = file.changeExtension(
-        fileName,
-        constants.extentionBackup,
-        constants.extentionArchiv
-      );
-      const srcFullName = file.getFullPath(pathDestination, fileName);
-      const dstFullName = file.getFullPath(pathDestination, nameArchiv);
-
-      try {
-        file.zipFileAdm(srcFullName, dstFullName);
-        logFile.writeMessage(
-          `  ${nameArchiv} zipped.`,
-          logFile.TYPE_MESSAGE_INFO
-        );
-      } catch (err) {
-        logFile.writeMessage(
-          `Unable to ${err.type} file ${err.file}.`,
-          logFile.TYPE_MESSAGE_ERROR
-        );
-      }
-
-      try {
-        file.deleteFile(srcFullName);
-        logFile.writeMessage(
-          `  ${fileName} deleted.`,
-          logFile.TYPE_MESSAGE_INFO
-        );
-      } catch (err) {
-        logFile.writeMessage(
-          `Unable to ${err.type} file ${err.file}.`,
-          logFile.TYPE_MESSAGE_ERROR
-        );
-      }
-    }
+  if (filesList.length > 0) {
+    zippedAndDeletingBackup(filesList);
   } else {
-    logFile.writeMessage("  No files to zipped.", logFile.TYPE_MESSAGE_INFO);
+    writeMessage("  No files to zipped.", TYPE_MESSAGE_INFO);
   }
 
-  logFile.writeMessage("Zipped finish.", logFile.TYPE_MESSAGE_SYST);
+  writeMessage("Zipped finish.", TYPE_MESSAGE_SYST);
 }
