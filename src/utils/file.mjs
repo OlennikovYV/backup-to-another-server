@@ -45,28 +45,6 @@ export function getFileCreationTime(fileName) {
   return fileInformation ? fileInformation.ctime : 0;
 }
 
-// TODO Delete after completed module filters
-export function isFileTimeNotExpired(fileName, expirationInDays) {
-  const nowDate = new Date();
-  const fileTime = getFileCreationTime(fileName);
-
-  if (!fileTime) return false;
-  const diffDate = nowDate - new Date(fileTime);
-  if (new Date(diffDate).getDate() > expirationInDays) return false;
-  return true;
-}
-
-export function isFileExtension(fileName, extension) {
-  return getFileExtension(fileName) === extension;
-}
-
-export function isExistsArchive(pathDestination, fileName, extensionArchive) {
-  const extension = getFileExtension(fileName);
-  const nameArchiv = changeExtension(fileName, extension, extensionArchive);
-  return pathExists(getFullPath(pathDestination, nameArchiv));
-}
-// TODO
-
 function readFileToBuffer(fileName) {
   try {
     const fileDescriptor = fs.openSync(fileName);

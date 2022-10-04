@@ -1,50 +1,72 @@
-import * as logFile from "../utils/log-file.mjs";
-import * as file from "../utils/file.mjs";
-import * as constants from "../utils/constants.mjs";
+import {
+  TYPE_MESSAGE_SYST,
+  TYPE_MESSAGE_ERROR,
+  TYPE_MESSAGE_INFO,
+  writeMessage,
+} from "../utils/log-file.mjs";
+import {
+  pathExists,
+  getFilesListFromPath,
+  getFullPath,
+  deleteFile,
+} from "../utils/file.mjs";
+import {
+  filterFilesList,
+  isFileTimeNotExpired,
+  isFileExtension,
+} from "../utils/filters.mjs";
+import {
+  pathSource,
+  expirationInDays,
+  extentionBackup,
+  extentionArchiv,
+} from "../utils/constants.mjs";
 
-export function deleteExpiredFiles(pathSource, expirationInDays) {
-  logFile.writeMessage("Garbage.", logFile.TYPE_MESSAGE_SYST);
+function verifyСonditions(fileName) {
+  return (
+    !isFileTimeNotExpired(
+      getFullPath(pathSource, fileName),
+      expirationInDays
+    ) &&
+    (isFileExtension(fileName, extentionBackup) ||
+      isFileExtension(fileName, extentionArchiv))
+  );
+}
 
-  if (!file.pathExists(pathSource)) {
-    logFile.writeMessage("Incorrect path.", logFile.TYPE_MESSAGE_ERROR);
-    logFile.writeMessage("Garbage finish.", logFile.TYPE_MESSAGE_SYST);
+function deleteExpiredFiles(filesList) {
+  filesList.forEach((fileName) => {
+    const fullName = getFullPath(pathSource, fileName);
+
+    if (pathExists(fullName)) {
+      try {
+        deleteFile(fullName);
+        writeMessage(`  ${fileName} deleted.`, TYPE_MESSAGE_INFO);
+      } catch (err) {
+        writeMessage(
+          `Unable to ${err.type} file ${err.file}.`,
+          TYPE_MESSAGE_ERROR
+        );
+      }
+    }
+  });
+}
+
+export function garbageFiles() {
+  writeMessage("Garbage.", TYPE_MESSAGE_SYST);
+
+  if (!pathExists(pathSource)) {
+    writeMessage("Incorrect path.", TYPE_MESSAGE_ERROR);
+    writeMessage("Garbage finish.", TYPE_MESSAGE_SYST);
     return;
   }
 
-  const sourceFileList = file.getFilesListFromPath(pathSource);
+  const srcFileList = getFilesListFromPath(pathSource);
 
-  const filterFilesList = sourceFileList.filter((fileName) => {
-    return (
-      !file.isFileTimeNotExpired(
-        file.getFullPath(pathSource, fileName),
-        expirationInDays
-      ) &&
-      (file.isFileExtension(fileName, constants.extentionBackup) ||
-        file.isFileExtension(fileName, constants.extentionArchiv))
-    );
-  });
+  const filesList = filterFilesList(srcFileList, verifyСonditions);
 
-  if (filterFilesList.length > 0) {
-    filterFilesList.forEach((fileName) => {
-      const fullName = file.getFullPath(pathSource, fileName);
+  if (filesList.length > 0) {
+    deleteExpiredFiles(filesList);
+  } else writeMessage("  No files to garbage.", TYPE_MESSAGE_INFO);
 
-      if (file.pathExists(fullName)) {
-        try {
-          file.deleteFile(fullName);
-          logFile.writeMessage(
-            `  ${fileName} deleted.`,
-            logFile.TYPE_MESSAGE_INFO
-          );
-        } catch (err) {
-          logFile.writeMessage(
-            `Unable to ${err.type} file ${err.file}.`,
-            logFile.TYPE_MESSAGE_ERROR
-          );
-        }
-      }
-    });
-  } else
-    logFile.writeMessage("  No files to garbage.", logFile.TYPE_MESSAGE_INFO);
-
-  logFile.writeMessage("Garbage finish.", logFile.TYPE_MESSAGE_SYST);
+  writeMessage("Garbage finish.", TYPE_MESSAGE_SYST);
 }
