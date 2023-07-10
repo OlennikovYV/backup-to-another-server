@@ -11,8 +11,9 @@ export function isFileTimeNotExpired(fileName, expirationInDays) {
   const fileTime = getFileCreationTime(fileName);
 
   if (!fileTime) return false;
-  const diffDate = nowDate - new Date(fileTime);
-  if (new Date(diffDate).getDate() > expirationInDays) return false;
+  const diffDate = new Date(nowDate).getTime() - new Date(fileTime).getTime();
+  const diffDay = Math.ceil(diffDate / (1000 * 3600 * 24));
+  if (diffDay > expirationInDays) return false;
   return true;
 }
 

@@ -8,7 +8,7 @@ import {
   getFullPath,
   pathExists,
   getFilesListFromPath,
-  copyFile,
+  copyBigFile,
 } from "../utils/file.mjs";
 import {
   isFileTimeNotExpired,
@@ -38,10 +38,10 @@ function copyingFilesList(filesList) {
     const dstFullName = getFullPath(pathDestination, fileName);
 
     try {
-      copyFile(srcFullName, dstFullName);
+      copyBigFile(srcFullName, dstFullName);
     } catch (err) {
       writeMessage(
-        `Unable to ${err.type} file ${err.file}.`,
+        `'${err.error.code}'. Unable to ${err.type} file ${err.file}.`,
         TYPE_MESSAGE_ERROR
       );
     }

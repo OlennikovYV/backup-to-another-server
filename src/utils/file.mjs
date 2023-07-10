@@ -51,16 +51,16 @@ function readFileToBuffer(fileName) {
     const buffer = fs.readFileSync(fileDescriptor);
     fs.closeSync(fileDescriptor);
     return buffer;
-  } catch {
-    throw { type: "read", file: fileName };
+  } catch (error) {
+    throw { type: "read", file: fileName, error: error };
   }
 }
 
 function writeFileFromBuffer(fileName, buffer) {
   try {
     fs.writeFileSync(fileName, buffer);
-  } catch {
-    throw { type: "write", file: fileName };
+  } catch (error) {
+    throw { type: "write", file: fileName, error: error };
   }
 }
 
@@ -86,11 +86,23 @@ export function zipFileAdm(srcFile, archiv) {
   }
 }
 
+export function zipBigFile(srcFile, archiv) {}
+
 export function copyFile(srcFile, dstFile) {
   try {
     const buffer = readFileToBuffer(srcFile);
     writeFileFromBuffer(dstFile, buffer);
   } catch (err) {
     throw err;
+  }
+}
+
+export function copyBigFile(srcFile, dstFile) {
+  try {
+    fs.copyFileSync(srcFile, dstFile);
+  } catch (error) {
+    if (error) {
+      throw { type: "copy", file: srcFile, error: error };
+    }
   }
 }

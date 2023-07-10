@@ -4,6 +4,6 @@ import { garbageFiles } from "./tasks/delete-expired-files.mjs";
 
 (function runTasks() {
   copyBackupFiles();
-  zippedBackupFiles();
-  garbageFiles();
+  // zippedBackupFiles();
+  // garbageFiles();
 })();

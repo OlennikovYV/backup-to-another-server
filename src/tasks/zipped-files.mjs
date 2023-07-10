@@ -10,6 +10,7 @@ import {
   getFullPath,
   changeExtension,
   zipFileAdm,
+  zipBigFile,
   deleteFile,
 } from "../utils/file.mjs";
 import {
@@ -44,18 +45,18 @@ function zippedAndDeletingBackup(filesList) {
     const dstFullName = getFullPath(pathDestination, nameArchiv);
 
     try {
-      zipFileAdm(srcFullName, dstFullName);
-      writeMessage(`  ${nameArchiv} zipped.`, TYPE_MESSAGE_INFO);
+      // zipBigFile(srcFullName, dstFullName);
+      // writeMessage(`  ${nameArchiv} zipped.`, TYPE_MESSAGE_INFO);
     } catch (err) {
       writeMessage(
-        `Unable to ${err.type} file ${err.file}.`,
+        `'${JSON.stringify(err)}' Unable to ${err.type} file ${err.file}.`,
         TYPE_MESSAGE_ERROR
       );
     }
 
     try {
-      deleteFile(srcFullName);
-      writeMessage(`  ${fileName} deleted.`, TYPE_MESSAGE_INFO);
+      // deleteFile(srcFullName);
+      // writeMessage(`  ${fileName} deleted.`, TYPE_MESSAGE_INFO);
     } catch (err) {
       writeMessage(
         `Unable to ${err.type} file ${err.file}.`,
