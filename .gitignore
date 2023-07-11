@@ -1,6 +1,4 @@
 /node_modules
 /test-destination
 /test-source
-/temp
-run-tasks.log.txt
 package-lock.json

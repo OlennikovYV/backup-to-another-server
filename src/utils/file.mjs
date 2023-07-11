@@ -2,6 +2,17 @@ import fs from "fs";
 import path from "path";
 import zlib from "zlib";
 import AdmZip from "adm-zip";
+import { TYPE_MESSAGE_INFO, writeMessage } from "./log-file.mjs";
+
+export function getFilename(absolutePath) {
+  try {
+    let filename = path.basename(absolutePath);
+
+    return filename;
+  } catch (error) {
+    throw { type: "delete", file: absolutePath };
+  }
+}
 
 export function getFullPath(dir, fileName) {
   return path.join(dir, fileName);
@@ -71,7 +82,7 @@ export function zipFile(srcFile, archiv) {
     writeFileFromBuffer(archiv, buffer);
   } catch (err) {
     if (err.type) throw err;
-    throw { type: "archive", file: srcFile };
+    throw { type: "archive", file: srcFile, error: err };
   }
 }
 
@@ -86,7 +97,24 @@ export function zipFileAdm(srcFile, archiv) {
   }
 }
 
-export function zipBigFile(srcFile, archiv) {}
+export async function zipBigFile(srcFile, archiv) {
+  return new Promise((resolve, reject) => {
+    const gzip = zlib.createGzip();
+    const input = fs.createReadStream(srcFile);
+    const output = fs.createWriteStream(archiv);
+
+    const stream = input.pipe(gzip).pipe(output);
+
+    stream.on("error", (error) =>
+      reject({ type: "archived", file: getFilename(srcFile), error: error })
+    );
+
+    stream.on("finish", () => {
+      writeMessage(`  ${getFilename(archiv)} zipped.`, TYPE_MESSAGE_INFO);
+      resolve();
+    });
+  });
+}
 
 export function copyFile(srcFile, dstFile) {
   try {

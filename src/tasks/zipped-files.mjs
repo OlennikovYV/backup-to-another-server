@@ -5,11 +5,11 @@ import {
   writeMessage,
 } from "../utils/log-file.mjs";
 import {
+  getFilename,
   pathExists,
   getFilesListFromPath,
   getFullPath,
   changeExtension,
-  zipFileAdm,
   zipBigFile,
   deleteFile,
 } from "../utils/file.mjs";
@@ -34,7 +34,7 @@ function verifyСonditions(fileName) {
   );
 }
 
-function zippedAndDeletingBackup(filesList) {
+async function zippedAndDeletingBackup(filesList) {
   for (let fileName of filesList) {
     const nameArchiv = changeExtension(
       fileName,
@@ -45,28 +45,29 @@ function zippedAndDeletingBackup(filesList) {
     const dstFullName = getFullPath(pathDestination, nameArchiv);
 
     try {
-      // zipBigFile(srcFullName, dstFullName);
-      // writeMessage(`  ${nameArchiv} zipped.`, TYPE_MESSAGE_INFO);
+      await zipBigFile(srcFullName, dstFullName);
     } catch (err) {
       writeMessage(
-        `'${JSON.stringify(err)}' Unable to ${err.type} file ${err.file}.`,
+        `'${JSON.stringify(err)}'. Unable to ${err.type} file ${err.file}.`,
         TYPE_MESSAGE_ERROR
       );
     }
 
     try {
-      // deleteFile(srcFullName);
-      // writeMessage(`  ${fileName} deleted.`, TYPE_MESSAGE_INFO);
-    } catch (err) {
+      const basename = getFilename(srcFullName);
+
+      deleteFile(srcFullName);
+      writeMessage(`  ${basename} deleted.`, TYPE_MESSAGE_INFO);
+    } catch (error) {
       writeMessage(
-        `Unable to ${err.type} file ${err.file}.`,
+        `Unable to ${error.type} file ${error.file}.`,
         TYPE_MESSAGE_ERROR
       );
     }
   }
 }
 
-export function zippedBackupFiles() {
+export async function zippedBackupFiles() {
   writeMessage("Zipped.", TYPE_MESSAGE_SYST);
 
   if (!pathExists(pathDestination)) {
@@ -79,7 +80,7 @@ export function zippedBackupFiles() {
   const filesList = filterFilesList(srcFileList, verifyСonditions);
 
   if (filesList.length > 0) {
-    zippedAndDeletingBackup(filesList);
+    await zippedAndDeletingBackup(filesList);
   } else {
     writeMessage("  No files to zipped.", TYPE_MESSAGE_INFO);
   }
